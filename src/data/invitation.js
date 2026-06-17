@@ -70,20 +70,6 @@ export const greeting = {
 
 // 갤러리 사진 (캐러셀 + 라이트박스). public/images/gallery/ 에 추가하고 경로를 넣으세요.
 export const galleryImages = [
-  '/images/gallery/DSC04553.jpg',
-  '/images/gallery/DSC04566.jpg',
-  '/images/gallery/DSC04823.jpg',
-  '/images/gallery/DSC05010.jpg',
-  '/images/gallery/DSC05029.jpg',
-  '/images/gallery/DSC05434.jpg',
-  '/images/gallery/DSC05449.jpg',
-  '/images/gallery/DSC05774.jpg',
-  '/images/gallery/DSC05996.jpg',
-  '/images/gallery/DSC06063.jpg',
-  '/images/gallery/DSC06136.jpg',
-  '/images/gallery/DSC06665.jpg',
-  '/images/gallery/DSC07042.jpg',
-  '/images/gallery/DSC07121.jpg',
 ]
 
 // 축의금 계좌 (접기/펼치기 + 복사 기능)
