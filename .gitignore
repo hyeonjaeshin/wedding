@@ -1,0 +1,40 @@
+# 의존성
+node_modules/
+
+# 빌드 산출물
+dist/
+dist-ssr/
+
+# 환경 변수 (실제 키는 커밋하지 않음)
+.env
+.env.local
+.env.*.local
+
+# Firebase
+.firebase/
+firebase-debug.log
+*-debug.log
+
+# Playwright MCP 산출물 (스크린샷/스냅샷)
+.playwright-mcp/
+
+# 로그 / 캐시
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.vite/
+
+# Claude Code 로컬 전용 설정(개인 권한 오버라이드)
+.claude/settings.local.json
+
+# 에디터 / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln

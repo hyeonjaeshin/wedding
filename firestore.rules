@@ -1,0 +1,45 @@
+rules_version = '2';
+
+// 청첩장 방명록(guestbook) / 참석 여부(rsvp) 컬렉션 규칙
+// - 누구나 읽고 쓸 수 있도록 허용하되, 간단한 형식 검증을 둔다.
+// - 운영 시에는 reCAPTCHA / App Check / 관리자 인증 등을 추가로 고려하세요.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /guestbook/{docId} {
+      allow read: if true;
+      allow create: if request.resource.data.name is string
+                    && request.resource.data.name.size() > 0
+                    && request.resource.data.name.size() < 30
+                    && request.resource.data.message is string
+                    && request.resource.data.message.size() > 0
+                    && request.resource.data.message.size() < 500;
+      allow update: if false;
+      // 삭제: 작성자가 본인 글을 지울 수 있도록 허용(클라이언트가 localStorage 로
+      // 본인 글 ID 를 기록해 본인 글에만 삭제 버튼 노출 → 기기 기준 보호, 보안 약함).
+      // ⚠️ 강한 보안이 필요하면 Auth 기반 소유자 검증으로 확장 권장.
+      allow delete: if true;
+    }
+
+    match /rsvp/{docId} {
+      allow read: if false; // 응답은 신랑신부(관리자 콘솔)에서만 확인
+      allow create: if request.resource.data.name is string
+                    && request.resource.data.name.size() > 0
+                    && request.resource.data.attending in ['yes', 'no'];
+      allow update, delete: if false;
+    }
+
+    // 갤러리 업로드 사진 (dataURL 저장). 읽기 공개.
+    // 생성: dataURL 형식 + 문서 1MB 한도 내 검증.
+    // 삭제: 관리자 사진 정리용으로 허용(클라이언트 패스코드 수준 보호 → 보안 약함).
+    // ⚠️ 강한 보안이 필요하면 Firebase Auth + Storage 로 확장 권장.
+    match /gallery/{docId} {
+      allow read: if true;
+      allow create: if request.resource.data.dataUrl is string
+                    && request.resource.data.dataUrl.size() < 1000000;
+      // 순서 변경(order)만 허용 — 이미지 데이터(dataUrl)는 변경 불가.
+      allow update: if request.resource.data.dataUrl == resource.data.dataUrl;
+      allow delete: if true;
+    }
+  }
+}

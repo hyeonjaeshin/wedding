@@ -1,0 +1,154 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply font-sans text-ink antialiased;
+  }
+}
+
+/* ───────────────────────────────────────────────
+   오로라 비주얼 시스템 (배경 · 글자 · 버튼 · 카드)
+   ─────────────────────────────────────────────── */
+
+/* 1) 움직이는 파스텔 오로라 배경 */
+.aurora-bg {
+  background:
+    radial-gradient(40rem 40rem at 15% 10%, rgba(255, 200, 230, 0.6), transparent 60%),
+    radial-gradient(36rem 36rem at 85% 20%, rgba(196, 224, 255, 0.6), transparent 60%),
+    radial-gradient(38rem 38rem at 80% 85%, rgba(200, 250, 226, 0.55), transparent 60%),
+    radial-gradient(34rem 34rem at 20% 90%, rgba(235, 214, 255, 0.55), transparent 60%),
+    linear-gradient(135deg, #fef6fb 0%, #f4f9ff 50%, #f6fff8 100%);
+  background-size: 200% 200%;
+  background-color: #fdf7fb;
+  background-attachment: fixed;
+  animation: auroraDrift 22s ease-in-out infinite;
+}
+
+/* 2) 오로라 그라데이션 글자 (제목 / 신랑신부 이름) */
+.aurora-text {
+  background-image: linear-gradient(
+    100deg,
+    #f7a8c8 0%,
+    #c4a9f0 28%,
+    #8fc7f0 52%,
+    #8ad9c0 76%,
+    #f7a8c8 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: auroraHue 8s linear infinite;
+}
+
+/* 밝은 배경(사진 커버) 위에서 가독성을 위한 변형: 흰 톤 그라데이션 */
+.aurora-text-light {
+  background-image: linear-gradient(
+    100deg,
+    #ffffff 0%,
+    #ffe3f1 30%,
+    #e3f0ff 55%,
+    #ffffff 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: auroraHue 7s linear infinite;
+}
+
+/* 3) 오로라 그라데이션 라인(divider) */
+.aurora-divider {
+  height: 1px;
+  border: 0;
+  background: linear-gradient(90deg, transparent, #eaa0b3, #c4a9f0, #8ad9c0, transparent);
+  background-size: 200% auto;
+  animation: auroraHue 6s linear infinite;
+}
+
+@keyframes auroraDrift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes auroraHue {
+  to { background-position: 200% center; }
+}
+
+@layer components {
+  /* 모바일 청첩장 본문: 화면 중앙의 단일 컬럼 (max-w-md) */
+  /* 반투명 크림 배경으로 뒤의 오로라가 은은히 비치게 한다. */
+  .invitation-shell {
+    @apply relative mx-auto min-h-[100dvh] w-full max-w-md overflow-hidden shadow-2xl backdrop-blur-[2px] md:my-8 md:min-h-[calc(100dvh-4rem)] md:rounded-[2rem] md:ring-1 md:ring-white/60;
+    background:
+      radial-gradient(28rem 28rem at 110% 8%, rgba(247, 168, 200, 0.16), transparent 60%),
+      radial-gradient(26rem 26rem at -10% 42%, rgba(143, 199, 240, 0.16), transparent 60%),
+      radial-gradient(30rem 30rem at 115% 80%, rgba(138, 217, 192, 0.16), transparent 60%),
+      rgba(255, 253, 250, 0.82);
+  }
+
+  .section {
+    @apply px-7 py-16;
+  }
+
+  /* 4) 오로라 버튼 (핵심 CTA) */
+  .aurora-btn {
+    @apply relative inline-flex items-center justify-center gap-1.5 rounded-full px-6 py-3 text-sm font-semibold text-white transition-transform duration-200;
+    background-image: linear-gradient(120deg, #eaa0b3, #c4a9f0, #8fc7f0, #8ad9c0, #eaa0b3);
+    background-size: 220% auto;
+    box-shadow: 0 8px 24px -8px rgba(196, 169, 240, 0.7);
+    animation: auroraHue 7s linear infinite;
+  }
+  .aurora-btn:hover { @apply scale-[1.03]; }
+  .aurora-btn:active { @apply scale-95; }
+  .aurora-btn:disabled { @apply scale-100 opacity-60; }
+
+  /* 보조 버튼 (테두리형, 오로라 글로우) */
+  .aurora-btn-outline {
+    @apply relative inline-flex items-center justify-center gap-1.5 rounded-full border border-white/60 bg-white/50 px-5 py-2.5 text-sm font-medium text-ink/70 backdrop-blur transition active:scale-95;
+    box-shadow: 0 4px 16px -6px rgba(143, 199, 240, 0.5);
+  }
+
+  /* 5) 글래스모피즘 카드 */
+  .glass-card {
+    @apply rounded-2xl border border-white/60 bg-white/55 shadow-lg backdrop-blur-md;
+  }
+}
+
+/* 스크롤 등장 애니메이션 (useScrollReveal 폴백용) */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.9s ease-out, transform 0.9s ease-out;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 접근성: 모션 최소화 설정 시 애니메이션 정지 */
+@media (prefers-reduced-motion: reduce) {
+  .aurora-bg,
+  .aurora-text,
+  .aurora-text-light,
+  .aurora-divider,
+  .aurora-btn {
+    animation: none !important;
+  }
+  .reveal {
+    transition: none !important;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}

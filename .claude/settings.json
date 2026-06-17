@@ -1,0 +1,25 @@
+{
+  "enabledMcpjsonServers": [
+    "playwright",
+    "context7",
+    "firebase"
+  ],
+"permissions": {
+     "allow": [
+      "ReadFile",
+      "WriteFile",
+      "ListFiles",
+      "FindFiles",
+      "SearchGrep",
+      "DirectoryListing",
+      "Bash",
+      "mcp__playwright__*",
+      "mcp__context7__*",
+      "mcp__firebase__*",
+      "Write"
+    ],
+    "deny": [
+      "Bash(git push*)"
+    ]
+  }
+}

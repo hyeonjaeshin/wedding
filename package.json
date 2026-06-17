@@ -1,0 +1,31 @@
+{
+  "name": "mobile-wedding-invitation",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Vue 3 + Vite + Tailwind + Firebase 기반 모바일 청첩장",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "optimize:images": "node scripts/optimize-images.mjs"
+  },
+  "dependencies": {
+    "@formkit/auto-animate": "^0.9.0",
+    "@lucide/vue": "^1.20.0",
+    "@vueuse/motion": "^3.0.3",
+    "canvas-confetti": "^1.9.4",
+    "firebase": "^10.12.2",
+    "swiper": "^12.2.0",
+    "vue": "^3.4.31"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.5",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.39",
+    "sharp": "^0.35.1",
+    "tailwindcss": "^3.4.6",
+    "vite": "^5.3.3",
+    "vite-plugin-image-optimizer": "^2.0.3"
+  }
+}
