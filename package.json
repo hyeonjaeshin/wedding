@@ -16,6 +16,7 @@
     "@vueuse/motion": "^3.0.3",
     "canvas-confetti": "^1.9.4",
     "firebase": "^10.12.2",
+    "heic2any": "^0.0.4",
     "swiper": "^12.2.0",
     "vue": "^3.4.31"
   },

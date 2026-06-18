@@ -11,9 +11,9 @@ function loadImage(file) {
       URL.revokeObjectURL(url)
       resolve(img)
     }
-    img.onerror = (e) => {
+    img.onerror = () => {
       URL.revokeObjectURL(url)
-      reject(e)
+      reject(new Error('이미지를 불러올 수 없습니다(지원하지 않는 형식일 수 있어요).'))
     }
     img.src = url
   })
@@ -25,9 +25,33 @@ function dataUrlBytes(dataUrl) {
   return Math.ceil(((dataUrl.length - i - 1) * 3) / 4)
 }
 
+// 아이폰 HEIC/HEIF 판별 (일부 브라우저는 canvas 로 디코딩 못 함 → JPEG 로 선변환)
+function isHeic(file) {
+  const t = (file.type || '').toLowerCase()
+  const n = (file.name || '').toLowerCase()
+  return t.includes('heic') || t.includes('heif') || /\.(heic|heif)$/.test(n)
+}
+
+// HEIC → JPEG Blob (heic2any 동적 import: 평소 번들에 영향 없음)
+async function heicToJpeg(file) {
+  const heic2any = (await import('heic2any')).default
+  const out = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 })
+  const blob = Array.isArray(out) ? out[0] : out
+  return new File([blob], file.name.replace(/\.(heic|heif)$/i, '.jpg'), { type: 'image/jpeg' })
+}
+
 export function useImageCompress() {
-  // 단일 파일 → 압축된 jpeg dataURL
-  async function compress(file) {
+  // 단일 파일 → 압축된 jpeg dataURL (실패 시 의미 있는 에러를 throw)
+  async function compress(inputFile) {
+    let file = inputFile
+    if (isHeic(file)) {
+      try {
+        file = await heicToJpeg(file)
+      } catch {
+        throw new Error('HEIC 사진 변환에 실패했습니다.')
+      }
+    }
+
     const img = await loadImage(file)
 
     const scale = Math.min(1, MAX_DIM / Math.max(img.width, img.height))

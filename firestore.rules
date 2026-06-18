@@ -41,5 +41,24 @@ service cloud.firestore {
       allow update: if request.resource.data.dataUrl == resource.data.dataUrl;
       allow delete: if true;
     }
+
+    // 커버 슬라이드쇼 업로드 사진 — 갤러리와 동일 규칙(읽기 공개/1MB 검증/순서변경/삭제).
+    match /covers/{docId} {
+      allow read: if true;
+      allow create: if request.resource.data.dataUrl is string
+                    && request.resource.data.dataUrl.size() < 1000000;
+      allow update: if request.resource.data.dataUrl == resource.data.dataUrl;
+      allow delete: if true;
+    }
+
+    // 게스트스냅 — 하객 누구나 업로드(공개). dataURL + 1MB 검증.
+    // 삭제: 업로더(기기 기준) / 관리자 정리용으로 허용. 수정 금지.
+    match /guestsnaps/{docId} {
+      allow read: if true;
+      allow create: if request.resource.data.dataUrl is string
+                    && request.resource.data.dataUrl.size() < 1000000;
+      allow update: if false;
+      allow delete: if true;
+    }
   }
 }

@@ -88,10 +88,18 @@ export const accounts = {
   },
 }
 
+// 두 사람이 함께한 시작일 — Countdown.vue 의 "함께한 시간" 카운터
+export const relationship = {
+  sinceISO: '2021-12-29',
+}
+
 // 찾아오는 길(대중교통 안내) — Location.vue 에서 렌더
 export const directions = {
   subway: '지하철 4호선 고잔역(고대안산병원) 2번 출구 → 왼쪽 대로변 따라 약 200m 전방',
   bus: '97 · 98 · 99-1 · 500번 버스 → 고잔역 뒤 정류장 하차',
+  // 오시는 길 안내 사진(약도/경로). public/images/directions/ 에 파일을 넣고 경로 지정.
+  // 빈 문자열이면 표시하지 않음.
+  image: '',
 }
 
 // 안내 문구(화환 사양 등) — Location.vue 에서 렌더

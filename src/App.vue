@@ -6,6 +6,7 @@ import MainCover from './components/sections/MainCover.vue'
 import Invitation from './components/sections/Invitation.vue'
 import Countdown from './components/sections/Countdown.vue'
 import Gallery from './components/sections/Gallery.vue'
+import GuestSnap from './components/sections/GuestSnap.vue'
 import Location from './components/sections/Location.vue'
 import Rsvp from './components/sections/Rsvp.vue'
 import Guestbook from './components/sections/Guestbook.vue'
@@ -57,13 +58,14 @@ onBeforeUnmount(() => {
     <BgmPlayer />
     <main class="invitation-shell">
       <MainCover />
-      <Invitation v-motion :initial="rise.initial" :visible-once="rise.visibleOnce" />
+      <Invitation id="after-cover" v-motion :initial="rise.initial" :visible-once="rise.visibleOnce" />
       <Countdown v-motion :initial="rise.initial" :visible-once="rise.visibleOnce" />
       <Gallery v-motion :initial="rise.initial" :visible-once="rise.visibleOnce" />
+      <GuestSnap v-motion :initial="rise.initial" :visible-once="rise.visibleOnce" />
       <Location v-motion :initial="rise.initial" :visible-once="rise.visibleOnce" />
-      <Rsvp v-motion :initial="rise.initial" :visible-once="rise.visibleOnce" />
       <Guestbook v-motion :initial="rise.initial" :visible-once="rise.visibleOnce" />
       <Account v-motion :initial="rise.initial" :visible-once="rise.visibleOnce" />
+      <Rsvp v-motion :initial="rise.initial" :visible-once="rise.visibleOnce" />
       <Footer v-motion :initial="rise.initial" :visible-once="rise.visibleOnce" />
     </main>
   </div>

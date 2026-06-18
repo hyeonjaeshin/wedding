@@ -14,7 +14,8 @@ const embedUrl = `https://maps.google.com/maps?q=${query}&z=16&hl=ko&output=embe
 // 외부 지도 앱 길찾기 (주소 검색 기반 — 좌표 없이 정확)
 const naverUrl = `https://map.naver.com/v5/search/${query}`
 const kakaoUrl = `https://map.kakao.com/?q=${query}`
-const googleUrl = `https://www.google.com/maps/search/?api=1&query=${query}`
+// 티맵은 주소 검색 웹URL이 없어 앱 스킴으로 연결(티맵 앱 설치된 폰에서 동작)
+const tmapUrl = `tmap://search?name=${query}`
 
 // (선택) 카카오 지도 SDK: VITE_KAKAO_MAP_KEY + 좌표(lat/lng)가 있으면 인터랙티브 카카오맵을 렌더.
 // 키가 없으면 위 구글 임베드가 그대로 표시된다.
@@ -98,18 +99,42 @@ async function copyAddress() {
       </div>
     </div>
 
-    <div class="mt-5 grid grid-cols-2 gap-2">
-      <button class="aurora-btn-outline" @click="copyAddress">
-        <Copy class="h-4 w-4" /> 주소 복사
-      </button>
-      <a :href="naverUrl" target="_blank" rel="noopener" class="aurora-btn-outline">
-        <Navigation class="h-4 w-4" /> 네이버 지도
+    <!-- 오시는 길 안내 사진(약도/경로) — 파일이 있을 때만 표시 -->
+    <div v-if="directions.image" class="mt-5 overflow-hidden rounded-2xl shadow ring-1 ring-white/60">
+      <img :src="directions.image" alt="오시는 길 안내" class="w-full" loading="lazy" />
+    </div>
+
+    <!-- 주소 복사 -->
+    <button class="aurora-btn-outline mt-5 w-full" @click="copyAddress">
+      <Copy class="h-4 w-4" /> 주소 복사
+    </button>
+
+    <!-- 길찾기: 네이버 · 카카오 · 티맵 (한 줄) -->
+    <div class="mt-3 grid grid-cols-3 gap-2">
+      <a
+        :href="naverUrl"
+        target="_blank"
+        rel="noopener"
+        class="glass-card flex flex-col items-center gap-1 py-3 text-xs font-medium text-ink/70"
+      >
+        <Navigation class="h-5 w-5 text-[#03c75a]" />
+        네이버
       </a>
-      <a :href="kakaoUrl" target="_blank" rel="noopener" class="aurora-btn-outline">
-        <Navigation class="h-4 w-4" /> 카카오 지도
+      <a
+        :href="kakaoUrl"
+        target="_blank"
+        rel="noopener"
+        class="glass-card flex flex-col items-center gap-1 py-3 text-xs font-medium text-ink/70"
+      >
+        <Navigation class="h-5 w-5 text-[#e6b800]" />
+        카카오
       </a>
-      <a :href="googleUrl" target="_blank" rel="noopener" class="aurora-btn-outline">
-        <Navigation class="h-4 w-4" /> 구글 지도
+      <a
+        :href="tmapUrl"
+        class="glass-card flex flex-col items-center gap-1 py-3 text-xs font-medium text-ink/70"
+      >
+        <Navigation class="h-5 w-5 text-aurora-blue" />
+        티맵
       </a>
     </div>
 

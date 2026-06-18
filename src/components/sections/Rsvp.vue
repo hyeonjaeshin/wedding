@@ -1,5 +1,6 @@
 <script setup>
 import { reactive } from 'vue'
+import { Check, X, Send } from '@lucide/vue'
 import SectionTitle from '../ui/SectionTitle.vue'
 import { useRsvp } from '../../composables/useRsvp'
 import { useConfetti } from '../../composables/useConfetti'
@@ -43,57 +44,73 @@ async function onSubmit() {
       <p class="mt-1 text-sm text-ink/60">소중한 마음 감사합니다.</p>
     </div>
 
-    <form v-else class="glass-card space-y-4 p-5" @submit.prevent="onSubmit">
+    <form v-else class="glass-card space-y-5 p-6" @submit.prevent="onSubmit">
       <!-- 신랑측 / 신부측 -->
-      <div class="flex gap-2">
-        <label
-          v-for="s in ['신랑측', '신부측']"
-          :key="s"
-          class="flex-1 cursor-pointer rounded-lg border py-2.5 text-center text-sm transition"
-          :class="form.side === s ? 'border-rosewood-400 bg-rosewood-300/20 text-rosewood-500' : 'border-cream-200 bg-white text-ink/60'"
-        >
-          <input v-model="form.side" type="radio" :value="s" class="hidden" />
-          {{ s }}
-        </label>
+      <div>
+        <p class="mb-2 text-xs font-medium tracking-wide text-ink/50">어느 쪽 하객이신가요?</p>
+        <div class="grid grid-cols-2 gap-2">
+          <label
+            v-for="s in ['신랑측', '신부측']"
+            :key="s"
+            class="cursor-pointer rounded-xl border py-3 text-center text-sm transition"
+            :class="form.side === s
+              ? 'border-rosewood-300 bg-gradient-to-r from-aurora-pink/25 to-aurora-lilac/25 font-semibold text-rosewood-500'
+              : 'border-white/70 bg-white/60 text-ink/55'"
+          >
+            <input v-model="form.side" type="radio" :value="s" class="hidden" />
+            {{ s }}
+          </label>
+        </div>
       </div>
 
       <!-- 참석 여부 -->
-      <div class="flex gap-2">
-        <label
-          v-for="opt in [{ v: 'yes', t: '참석' }, { v: 'no', t: '불참' }]"
-          :key="opt.v"
-          class="flex-1 cursor-pointer rounded-lg border py-2.5 text-center text-sm transition"
-          :class="form.attending === opt.v ? 'border-sage-500 bg-sage-400/15 text-sage-600' : 'border-cream-200 bg-white text-ink/60'"
-        >
-          <input v-model="form.attending" type="radio" :value="opt.v" class="hidden" />
-          {{ opt.t }}
-        </label>
+      <div>
+        <p class="mb-2 text-xs font-medium tracking-wide text-ink/50">참석 여부</p>
+        <div class="grid grid-cols-2 gap-2">
+          <label
+            v-for="opt in [{ v: 'yes', t: '참석할게요' }, { v: 'no', t: '어려울 것 같아요' }]"
+            :key="opt.v"
+            class="flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border py-3 text-center text-sm transition"
+            :class="form.attending === opt.v
+              ? 'border-sage-400 bg-sage-400/15 font-semibold text-sage-600'
+              : 'border-white/70 bg-white/60 text-ink/55'"
+          >
+            <input v-model="form.attending" type="radio" :value="opt.v" class="hidden" />
+            <component :is="opt.v === 'yes' ? Check : X" class="h-4 w-4" />
+            {{ opt.t }}
+          </label>
+        </div>
       </div>
 
-      <input
-        v-model="form.name"
-        type="text"
-        placeholder="성함"
-        maxlength="20"
-        class="w-full rounded-lg border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-sage-400"
-      />
+      <!-- 성함 -->
+      <div>
+        <p class="mb-2 text-xs font-medium tracking-wide text-ink/50">성함</p>
+        <input
+          v-model="form.name"
+          type="text"
+          placeholder="성함을 입력해 주세요"
+          maxlength="20"
+          class="w-full rounded-xl border border-white/70 bg-white/70 px-4 py-3 text-sm outline-none transition focus:border-rosewood-300 focus:bg-white"
+        />
+      </div>
 
-      <div class="flex gap-3">
-        <div class="flex-1">
-          <label class="mb-1 block text-xs text-ink/50">참석 인원</label>
+      <!-- 인원 / 식사 (참석일 때만) -->
+      <div v-if="form.attending === 'yes'" class="grid grid-cols-2 gap-3">
+        <div>
+          <p class="mb-2 text-xs font-medium tracking-wide text-ink/50">참석 인원</p>
           <input
             v-model.number="form.count"
             type="number"
             min="1"
             max="20"
-            class="w-full rounded-lg border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-sage-400"
+            class="w-full rounded-xl border border-white/70 bg-white/70 px-4 py-3 text-sm outline-none transition focus:border-rosewood-300 focus:bg-white"
           />
         </div>
-        <div class="flex-1">
-          <label class="mb-1 block text-xs text-ink/50">식사 여부</label>
+        <div>
+          <p class="mb-2 text-xs font-medium tracking-wide text-ink/50">식사 여부</p>
           <select
             v-model="form.meal"
-            class="w-full rounded-lg border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-sage-400"
+            class="w-full rounded-xl border border-white/70 bg-white/70 px-4 py-3 text-sm outline-none transition focus:border-rosewood-300 focus:bg-white"
           >
             <option value="yes">식사함</option>
             <option value="no">식사안함</option>
@@ -102,15 +119,20 @@ async function onSubmit() {
         </div>
       </div>
 
-      <textarea
-        v-model="form.memo"
-        rows="2"
-        placeholder="전달 사항 (선택)"
-        maxlength="200"
-        class="w-full resize-none rounded-lg border border-cream-200 bg-white px-4 py-3 text-sm outline-none focus:border-sage-400"
-      ></textarea>
+      <!-- 전달 사항 -->
+      <div>
+        <p class="mb-2 text-xs font-medium tracking-wide text-ink/50">전달 사항 (선택)</p>
+        <textarea
+          v-model="form.memo"
+          rows="2"
+          placeholder="신랑신부에게 전할 말씀이 있다면 남겨주세요"
+          maxlength="200"
+          class="w-full resize-none rounded-xl border border-white/70 bg-white/70 px-4 py-3 text-sm leading-6 outline-none transition focus:border-rosewood-300 focus:bg-white"
+        ></textarea>
+      </div>
 
       <button type="submit" :disabled="submitting" class="aurora-btn w-full">
+        <Send class="h-4 w-4" />
         {{ submitting ? '전송 중...' : '참석 여부 전달하기' }}
       </button>
     </form>
