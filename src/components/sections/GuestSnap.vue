@@ -8,7 +8,7 @@ import { useConfetti } from '../../composables/useConfetti'
 
 // 게스트스냅: 하객 누구나 사진을 올리고 함께 보는 공간(공개)
 const { items, uploadSnaps, removeMine, isMine } = useGuestsnap()
-const { compress } = useImageCompress()
+const { compressToBlob } = useImageCompress()
 const { celebrate } = useConfetti()
 
 const busy = ref(false)
@@ -27,18 +27,18 @@ async function handleFiles(fileList) {
   )
   if (!files.length) return
   busy.value = true
-  const dataUrls = []
+  const blobs = []
   const errors = []
   for (const f of files) {
     try {
-      const { dataUrl } = await compress(f)
-      dataUrls.push(dataUrl)
+      const { blob } = await compressToBlob(f, { maxDim: 1600, quality: 0.82 })
+      blobs.push(blob)
     } catch {
       errors.push(f.name)
     }
   }
-  if (dataUrls.length) {
-    const { ok } = await uploadSnaps(dataUrls)
+  if (blobs.length) {
+    const { ok } = await uploadSnaps(blobs)
     if (ok) {
       celebrate()
       showToast(`사진 ${ok}장을 올렸어요 💕`)
@@ -122,7 +122,7 @@ async function onDelete(item) {
         class="group relative aspect-square overflow-hidden rounded-lg ring-1 ring-white/60"
       >
         <img
-          :src="snap.dataUrl"
+          :src="snap.src"
           :alt="snap.name ? `${snap.name}의 스냅` : '하객 스냅'"
           loading="lazy"
           class="h-full w-full cursor-pointer object-cover"
@@ -167,7 +167,7 @@ async function onDelete(item) {
           </button>
           <div class="flex h-full w-full items-center justify-center p-4" @click.self="close">
             <img
-              :src="items[activeIndex]?.dataUrl"
+              :src="items[activeIndex]?.src"
               alt=""
               class="max-h-[88vh] max-w-[94vw] rounded-lg object-contain"
             />

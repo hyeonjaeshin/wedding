@@ -7,7 +7,7 @@ import { useGuestsnap } from '../../composables/useGuestsnap'
 import { useImageCompress } from '../../composables/useImageCompress'
 
 // ── 패스코드 게이트 (비밀 URL + 패스코드 수준의 가벼운 보호) ──
-const PASSCODE = import.meta.env.VITE_ADMIN_PASSCODE || 'wedding1017'
+const PASSCODE = import.meta.env.VITE_ADMIN_PASSCODE || 'wedding1031'
 const unlocked = ref(false)
 const passInput = ref('')
 const passError = ref(false)
@@ -31,7 +31,12 @@ function tryUnlock() {
 const gallery = useGallery()
 const covers = useCovers()
 const guestsnap = useGuestsnap()
-const { compress } = useImageCompress()
+const { compressToBlob } = useImageCompress()
+
+// 커버는 전체화면이라 더 큰 해상도/높은 품질로 저장(Storage 라 용량 제약 없음)
+const compressOpts = computed(() =>
+  tab.value === 'covers' ? { maxDim: 2200, quality: 0.85 } : { maxDim: 1600, quality: 0.82 }
+)
 
 // 탭: 갤러리 / 커버 / 게스트스냅
 const tab = ref('gallery')
@@ -49,7 +54,7 @@ function switchTab(k) {
 }
 
 // ── 업로드(갤러리/커버) ──
-const pending = ref([]) // { dataUrl, bytes, name }
+const pending = ref([]) // { blob, previewUrl, bytes, name }
 const compressing = ref(false)
 const dragging = ref(false)
 const progress = ref(0)
@@ -68,8 +73,8 @@ async function handleFiles(fileList) {
   try {
     for (const file of files) {
       try {
-        const { dataUrl, bytes } = await compress(file)
-        pending.value.push({ dataUrl, bytes, name: file.name })
+        const { blob, bytes } = await compressToBlob(file, compressOpts.value)
+        pending.value.push({ blob, previewUrl: URL.createObjectURL(blob), bytes, name: file.name })
       } catch (err) {
         errors.push(`${file.name}: ${err?.message || '처리 실패'}`)
       }
@@ -89,16 +94,18 @@ function onDrop(e) {
 }
 
 function removePending(i) {
+  URL.revokeObjectURL(pending.value[i]?.previewUrl)
   pending.value.splice(i, 1)
 }
 
 async function doUpload() {
   if (!pending.value.length) return
   progress.value = 0
-  const { ok, fail } = await target.value.uploadDataUrls(
-    pending.value.map((p) => p.dataUrl),
+  const { ok, fail } = await target.value.uploadBlobs(
+    pending.value.map((p) => p.blob),
     (done) => (progress.value = done)
   )
+  pending.value.forEach((p) => URL.revokeObjectURL(p.previewUrl))
   pending.value = []
   alert(`업로드 완료: 성공 ${ok}건${fail ? `, 실패 ${fail}건` : ''}`)
 }
@@ -187,7 +194,7 @@ function goHome() {
             </p>
             <div class="grid grid-cols-3 gap-2">
               <div v-for="(p, i) in pending" :key="i" class="relative aspect-square overflow-hidden rounded-lg">
-                <img :src="p.dataUrl" class="h-full w-full object-cover" />
+                <img :src="p.previewUrl" class="h-full w-full object-cover" />
                 <span class="absolute bottom-0 left-0 right-0 bg-black/45 py-0.5 text-center text-[10px] text-white">
                   {{ fmtKB(p.bytes) }}
                 </span>
@@ -220,7 +227,7 @@ function goHome() {
                 class="glass-card flex items-center gap-3 p-2"
               >
                 <span class="w-5 shrink-0 text-center text-xs text-ink/40">{{ i + 1 }}</span>
-                <img :src="item.dataUrl" class="h-14 w-14 shrink-0 rounded-lg object-cover" />
+                <img :src="item.src" class="h-14 w-14 shrink-0 rounded-lg object-cover" />
                 <div class="ml-auto flex items-center gap-1">
                   <button
                     class="rounded-lg border border-white/70 bg-white/60 p-2 text-ink/60 disabled:opacity-30"
@@ -264,7 +271,7 @@ function goHome() {
               :key="snap.id"
               class="relative aspect-square overflow-hidden rounded-lg ring-1 ring-white/60"
             >
-              <img :src="snap.dataUrl" class="h-full w-full object-cover" />
+              <img :src="snap.src" class="h-full w-full object-cover" />
               <span
                 v-if="snap.name"
                 class="pointer-events-none absolute bottom-0 left-0 right-0 truncate bg-black/40 px-1 py-0.5 text-[10px] text-white"
