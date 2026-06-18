@@ -37,6 +37,11 @@ function scrollNext() {
   <section class="relative h-[100dvh] min-h-[560px] overflow-hidden md:rounded-t-[2rem]">
     <!-- 배경 슬라이드쇼 (opacity 전환 + 활성 슬라이드만 줌, GPU 합성) -->
     <div class="absolute inset-0">
+      <!-- 업로드된 커버가 없을 때 오로라 그라데이션 폴백 -->
+      <div
+        v-if="!images.length"
+        class="absolute inset-0 bg-gradient-to-br from-aurora-pink via-aurora-lilac to-aurora-blue"
+      />
       <div
         v-for="(img, i) in images"
         :key="`${img}-${i}`"

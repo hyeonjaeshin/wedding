@@ -47,12 +47,9 @@ export const wedding = {
   },
 }
 
-// 메인 커버에서 자동으로 전환되는 사진들 (첫 화면 슬라이드쇼)
-export const coverImages = [
-  '/images/cover/DSC05209.jpg',
-  '/images/cover/DSC05210.jpg',
-  '/images/cover/DSC06344.jpg',
-]
+// 메인 커버 슬라이드쇼 사진.
+// 비워두면 #/admin "커버" 탭에서 업로드한 사진만 사용한다(업로드 전에는 오로라 배경).
+export const coverImages = []
 
 // 인사말 (모시는 글)
 export const greeting = {
