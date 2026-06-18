@@ -5,7 +5,6 @@
 //   키 없이도 UI 를 시연할 수 있다. (composables 참고)
 import { initializeApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
-import { getStorage } from 'firebase/storage'
 import { getAnalytics, isSupported } from 'firebase/analytics'
 
 const firebaseConfig = {
@@ -22,12 +21,10 @@ const firebaseConfig = {
 const isConfigured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId)
 
 let db = null
-let storage = null
 
 if (isConfigured) {
   const app = initializeApp(firebaseConfig)
   db = getFirestore(app)
-  storage = getStorage(app)
 
   // Analytics 는 브라우저 환경에서 지원될 때만 안전하게 초기화
   if (firebaseConfig.measurementId) {
@@ -44,4 +41,4 @@ if (isConfigured) {
   )
 }
 
-export { db, storage, isConfigured }
+export { db, isConfigured }

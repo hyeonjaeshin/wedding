@@ -1,7 +1,10 @@
 // 브라우저(canvas)에서 이미지를 리사이즈·압축해 dataURL 로 변환한다.
 // Firestore 문서(1MB) 한도 안에 들어가도록 가로 길이/품질을 조절한다.
-const MAX_DIM = 1280 // 가로/세로 최대 픽셀
-const MAX_BYTES = 920 * 1024 // dataURL 목표 상한 (문서 1MB 한도 여유)
+// 종류별 기본값(커버는 화질 유지 위해 크게, 갤러리는 가볍게)은 호출부에서 옵션으로 넘긴다.
+const MAX_DIM = 1280 // 기본 최대 픽셀(옵션 미지정 시)
+// dataURL 문자열은 Firestore 규칙상 1,000,000자 미만이어야 한다.
+// 디코딩 바이트 ≈ 문자수 × 3/4 → 안전하게 700KB(≈ 933,000자)로 상한을 둔다.
+const MAX_BYTES = 700 * 1024
 
 function loadImage(file) {
   return new Promise((resolve, reject) => {
@@ -40,53 +43,43 @@ async function heicToJpeg(file) {
   return new File([blob], file.name.replace(/\.(heic|heif)$/i, '.jpg'), { type: 'image/jpeg' })
 }
 
-// 파일 → (HEIC 변환) → maxDim 으로 리사이즈한 canvas 반환
-async function toCanvas(inputFile, maxDim) {
-  let file = inputFile
-  if (isHeic(file)) {
-    try {
-      file = await heicToJpeg(file)
-    } catch {
-      throw new Error('HEIC 사진 변환에 실패했습니다.')
-    }
-  }
-  const img = await loadImage(file)
-  const scale = Math.min(1, maxDim / Math.max(img.width, img.height))
-  const w = Math.round(img.width * scale)
-  const h = Math.round(img.height * scale)
-  const canvas = document.createElement('canvas')
-  canvas.width = w
-  canvas.height = h
-  canvas.getContext('2d').drawImage(img, 0, 0, w, h)
-  return { canvas, w, h }
-}
-
 export function useImageCompress() {
-  // 단일 파일 → 압축된 jpeg dataURL (Firestore dataURL 방식 — 1MB 한도용, 레거시)
-  async function compress(inputFile) {
-    const { canvas, w, h } = await toCanvas(inputFile, MAX_DIM)
-    let quality = 0.72
-    let dataUrl = canvas.toDataURL('image/jpeg', quality)
-    while (dataUrlBytes(dataUrl) > MAX_BYTES && quality > 0.4) {
-      quality -= 0.1
-      dataUrl = canvas.toDataURL('image/jpeg', quality)
+  // 단일 파일 → 압축된 jpeg dataURL (실패 시 의미 있는 에러를 throw)
+  // opts.maxDim  : 가로/세로 최대 픽셀 (클수록 선명·무거움)
+  // opts.quality : 시작 JPEG 품질 (0~1)
+  // opts.maxBytes: 결과 dataURL 디코딩 바이트 상한 (초과 시 품질을 낮춰 맞춤)
+  async function compress(inputFile, { maxDim = MAX_DIM, quality = 0.72, maxBytes = MAX_BYTES } = {}) {
+    let file = inputFile
+    if (isHeic(file)) {
+      try {
+        file = await heicToJpeg(file)
+      } catch {
+        throw new Error('HEIC 사진 변환에 실패했습니다.')
+      }
     }
+
+    const img = await loadImage(file)
+
+    const scale = Math.min(1, maxDim / Math.max(img.width, img.height))
+    const w = Math.round(img.width * scale)
+    const h = Math.round(img.height * scale)
+
+    const canvas = document.createElement('canvas')
+    canvas.width = w
+    canvas.height = h
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(img, 0, 0, w, h)
+
+    // 품질을 단계적으로 낮춰 목표 용량 이하로 맞춘다(절대 Firestore 1MB 한도를 넘지 않도록)
+    let q = quality
+    let dataUrl = canvas.toDataURL('image/jpeg', q)
+    while (dataUrlBytes(dataUrl) > maxBytes && q > 0.35) {
+      q -= 0.08
+      dataUrl = canvas.toDataURL('image/jpeg', q)
+    }
+
     return { dataUrl, width: w, height: h, bytes: dataUrlBytes(dataUrl) }
   }
 
-  // 단일 파일 → 압축된 jpeg Blob (Firebase Storage 업로드용 — 1MB 한도 없음, 고화질)
-  // opts.maxDim: 최대 변, opts.quality: jpeg 품질
-  async function compressToBlob(inputFile, { maxDim = 1920, quality = 0.85 } = {}) {
-    const { canvas, w, h } = await toCanvas(inputFile, maxDim)
-    const blob = await new Promise((resolve, reject) => {
-      canvas.toBlob(
-        (b) => (b ? resolve(b) : reject(new Error('이미지 변환 실패'))),
-        'image/jpeg',
-        quality
-      )
-    })
-    return { blob, width: w, height: h, bytes: blob.size }
-  }
-
-  return { compress, compressToBlob }
+  return { compress }
 }

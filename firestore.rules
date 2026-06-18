@@ -29,29 +29,34 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // 갤러리 업로드 사진 — 이미지는 Storage 에, Firestore 에는 url/path 만 저장.
-    // 읽기 공개. 생성은 url 문자열 필요. 순서(order)만 변경 가능. 삭제 허용.
-    // (과거 dataURL 문서도 읽기는 그대로 동작)
+    // 갤러리 업로드 사진 (dataURL 저장). 읽기 공개.
+    // 생성: dataURL 형식 + 문서 1MB 한도 내 검증.
+    // 삭제: 관리자 사진 정리용으로 허용(클라이언트 패스코드 수준 보호 → 보안 약함).
+    // ⚠️ 강한 보안이 필요하면 Firebase Auth + Storage 로 확장 권장.
     match /gallery/{docId} {
       allow read: if true;
-      allow create: if request.resource.data.url is string;
-      allow update: if request.resource.data.url == resource.data.url;
+      allow create: if request.resource.data.dataUrl is string
+                    && request.resource.data.dataUrl.size() < 1000000;
+      // 순서 변경(order)만 허용 — 이미지 데이터(dataUrl)는 변경 불가.
+      allow update: if request.resource.data.dataUrl == resource.data.dataUrl;
       allow delete: if true;
     }
 
-    // 커버 슬라이드쇼 — 갤러리와 동일.
+    // 커버 슬라이드쇼 업로드 사진 — 갤러리와 동일 규칙(읽기 공개/1MB 검증/순서변경/삭제).
     match /covers/{docId} {
       allow read: if true;
-      allow create: if request.resource.data.url is string;
-      allow update: if request.resource.data.url == resource.data.url;
+      allow create: if request.resource.data.dataUrl is string
+                    && request.resource.data.dataUrl.size() < 1000000;
+      allow update: if request.resource.data.dataUrl == resource.data.dataUrl;
       allow delete: if true;
     }
 
-    // 게스트스냅 — 하객 누구나 업로드(공개). url 저장.
+    // 게스트스냅 — 하객 누구나 업로드(공개). dataURL + 1MB 검증.
     // 삭제: 업로더(기기 기준) / 관리자 정리용으로 허용. 수정 금지.
     match /guestsnaps/{docId} {
       allow read: if true;
-      allow create: if request.resource.data.url is string;
+      allow create: if request.resource.data.dataUrl is string
+                    && request.resource.data.dataUrl.size() < 1000000;
       allow update: if false;
       allow delete: if true;
     }

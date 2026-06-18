@@ -21,16 +21,16 @@ function saveOwned(set) {
 }
 
 export function useGuestsnap() {
-  const { items, submitting, uploadBlobs, removePhoto } = usePhotoCollection('guestsnaps', {
+  const { items, submitting, uploadDataUrls, removePhoto } = usePhotoCollection('guestsnaps', {
     ordered: false,
   })
   const ownedIds = ref(loadOwned())
   const isMine = (id) => ownedIds.value.has(id)
 
   // 게스트 사진 업로드(이름 옵션). 성공한 문서 id 를 내 것으로 기록.
-  async function uploadSnaps(blobs, name, onProgress) {
+  async function uploadSnaps(dataUrls, name, onProgress) {
     const extra = name?.trim() ? { name: name.trim().slice(0, 30) } : {}
-    const res = await uploadBlobs(blobs, onProgress, extra)
+    const res = await uploadDataUrls(dataUrls, onProgress, extra)
     for (const id of res.ids) ownedIds.value.add(id)
     saveOwned(ownedIds.value)
     return res
