@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { Heart } from '@lucide/vue'
-import { couple, wedding, relationship } from '../../data/invitation'
+import { couple, wedding } from '../../data/invitation'
 
 // 예식까지 남은 시간(D-day) 카운트다운
 const now = ref(Date.now())
@@ -27,33 +27,6 @@ const units = computed(() => [
 ])
 
 const pad = (n) => String(n).padStart(2, '0')
-
-// 함께한 시간 (연애 시작일 ~ 오늘): 총 일수 + n년 n개월
-const since = relationship?.sinceISO ? new Date(relationship.sinceISO) : null
-const togetherDays = computed(() => {
-  if (!since) return 0
-  return Math.max(0, Math.floor((now.value - since.getTime()) / 86400000))
-})
-const togetherText = computed(() => {
-  if (!since) return ''
-  const d = new Date(since)
-  const n = new Date(now.value)
-  let years = n.getFullYear() - d.getFullYear()
-  let months = n.getMonth() - d.getMonth()
-  if (n.getDate() < d.getDate()) months -= 1
-  if (months < 0) {
-    years -= 1
-    months += 12
-  }
-  const parts = []
-  if (years > 0) parts.push(`${years}년`)
-  if (months > 0) parts.push(`${months}개월`)
-  return parts.join(' ')
-})
-const comma = (n) => n.toLocaleString('ko-KR')
-const sinceLabel = since
-  ? `${since.getFullYear()}.${pad(since.getMonth() + 1)}.${pad(since.getDate())}`
-  : ''
 </script>
 
 <template>
@@ -78,19 +51,5 @@ const sinceLabel = since
     <p class="mt-7 text-sm text-ink/70">
       결혼식이 <span class="aurora-text font-bold">{{ days }}</span>일 남았습니다.
     </p>
-
-    <!-- 함께한 시간 (D-day 카드와 다른 에디토리얼 스타일) -->
-    <div v-if="since" class="mt-10">
-      <div class="aurora-divider mx-auto mb-5 w-12 opacity-80" />
-      <p class="text-[11px] uppercase tracking-[0.3em] text-sage-600">Since {{ sinceLabel }}</p>
-      <p class="mt-2.5 font-serif text-lg leading-none text-ink/80">
-        함께한 지
-        <span class="aurora-text align-baseline text-[2rem] font-bold tabular-nums">{{ comma(togetherDays) }}</span>
-        일
-      </p>
-      <p v-if="togetherText" class="mt-2 text-xs tracking-wide text-ink/45">
-        {{ togetherText }} 동안, 변함없이 🤍
-      </p>
-    </div>
   </section>
 </template>

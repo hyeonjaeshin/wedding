@@ -15,11 +15,35 @@ import { db } from '../firebase'
 // Firestore 사진 컬렉션 공통 로직(구독/업로드/삭제/순서변경).
 //  - ordered=true : order 필드 오름차순 + movePhoto 지원(갤러리/커버)
 //  - ordered=false: createdAt 내림차순(게스트스냅 — 최신순), movePhoto 없음
+//  - cacheKey   : 지정 시 localStorage 에 캐시 → 재방문 시 네트워크 전에 즉시 표시(커버용)
+//  - cacheLimit : 캐시할 최대 장수(커버는 첫 1장만 캐시하면 첫 페인트가 즉시 뜬다)
 // 사진은 클라이언트 압축 후 dataURL 로 저장한다.
-export function usePhotoCollection(name, { ordered = true } = {}) {
-  const items = ref([]) // { id, dataUrl, order?, name? }
+const CACHE_MAX_BYTES = 2 * 1024 * 1024 // 캐시 용량 가드(약 2MB)
+
+export function usePhotoCollection(name, { ordered = true, cacheKey = null, cacheLimit = Infinity } = {}) {
+  // 캐시가 있으면 동기적으로 먼저 채워 첫 페인트에 바로 보이게 한다.
+  const initial = (() => {
+    if (!cacheKey) return []
+    try {
+      return JSON.parse(localStorage.getItem(cacheKey) || '[]')
+    } catch {
+      return []
+    }
+  })()
+  const items = ref(initial) // { id, dataUrl, order?, name? }
   const submitting = ref(false)
   let unsubscribe = null
+
+  function persistCache(list) {
+    if (!cacheKey) return
+    try {
+      const slice = list.slice(0, cacheLimit)
+      const json = JSON.stringify(slice)
+      if (json.length <= CACHE_MAX_BYTES) localStorage.setItem(cacheKey, json)
+    } catch {
+      /* 용량 초과/사용 불가 시 무시 */
+    }
+  }
 
   onMounted(() => {
     if (!db) return
@@ -35,6 +59,7 @@ export function usePhotoCollection(name, { ordered = true } = {}) {
           order: d.data().order ?? 0,
           name: d.data().name ?? '',
         }))
+        persistCache(items.value)
       },
       (err) => {
         if (err?.code === 'permission-denied') {

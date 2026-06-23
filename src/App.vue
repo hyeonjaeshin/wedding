@@ -1,9 +1,11 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ChevronUp } from '@lucide/vue'
 import BgmPlayer from './components/BgmPlayer.vue'
 import AdminUpload from './components/admin/AdminUpload.vue'
 import MainCover from './components/sections/MainCover.vue'
 import Invitation from './components/sections/Invitation.vue'
+import Together from './components/sections/Together.vue'
 import Countdown from './components/sections/Countdown.vue'
 import Gallery from './components/sections/Gallery.vue'
 import GuestSnap from './components/sections/GuestSnap.vue'
@@ -28,6 +30,11 @@ const rise = {
 
 // 상단 스크롤 진행바 (0~100%)
 const progress = ref(0)
+// 위로가기 버튼: 어느 정도 내려갔을 때만 표시
+const showTop = computed(() => progress.value > 12)
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
 function onScroll() {
   const h = document.documentElement
   const max = h.scrollHeight - h.clientHeight
@@ -59,6 +66,7 @@ onBeforeUnmount(() => {
     <main class="invitation-shell">
       <MainCover />
       <Invitation id="after-cover" v-motion :initial="rise.initial" :visible-once="rise.visibleOnce" />
+      <Together v-motion :initial="rise.initial" :visible-once="rise.visibleOnce" />
       <Countdown v-motion :initial="rise.initial" :visible-once="rise.visibleOnce" />
       <Gallery v-motion :initial="rise.initial" :visible-once="rise.visibleOnce" />
       <GuestSnap v-motion :initial="rise.initial" :visible-once="rise.visibleOnce" />
@@ -68,6 +76,19 @@ onBeforeUnmount(() => {
       <Rsvp v-motion :initial="rise.initial" :visible-once="rise.visibleOnce" />
       <Footer v-motion :initial="rise.initial" :visible-once="rise.visibleOnce" />
     </main>
+
+    <!-- 위로가기 버튼 (스크롤 내려가면 등장) -->
+    <transition name="totop">
+      <button
+        v-if="showTop"
+        type="button"
+        class="to-top aurora-btn !p-0"
+        aria-label="맨 위로"
+        @click="scrollToTop"
+      >
+        <ChevronUp class="h-5 w-5" />
+      </button>
+    </transition>
   </div>
 </template>
 
@@ -78,5 +99,24 @@ onBeforeUnmount(() => {
   animation: auroraHue 6s linear infinite;
   box-shadow: 0 0 10px rgba(196, 169, 240, 0.7);
   transition: width 0.1s linear;
+}
+
+/* 위로가기 플로팅 버튼 */
+.to-top {
+  position: fixed;
+  right: 1rem;
+  bottom: calc(1rem + env(safe-area-inset-bottom));
+  z-index: 50;
+  height: 2.75rem;
+  width: 2.75rem;
+}
+.totop-enter-active,
+.totop-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.totop-enter-from,
+.totop-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
 }
 </style>

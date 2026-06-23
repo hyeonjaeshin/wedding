@@ -6,10 +6,13 @@
   html {
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
+    /* 상단/하단 당김(rubber-band) 바운스 제거 → 커버 끌어내릴 때 튐 방지 */
+    overscroll-behavior-y: none;
   }
 
   body {
     @apply font-sans text-ink antialiased;
+    overscroll-behavior-y: none;
   }
 }
 
@@ -27,7 +30,7 @@
     linear-gradient(135deg, #fef6fb 0%, #f4f9ff 50%, #f6fff8 100%);
   background-size: 200% 200%;
   background-color: #fdf7fb;
-  background-attachment: fixed;
+  /* background-attachment: fixed 제거 — 모바일 스크롤 중 매 프레임 리페인트(버벅임) 주범 */
   animation: auroraDrift 22s ease-in-out infinite;
 }
 
@@ -99,6 +102,9 @@
 
   .section {
     @apply px-7 py-16;
+    /* 화면 밖 섹션 렌더링 비용 절감 → 사진 많은 구간 스크롤 부드럽게 */
+    content-visibility: auto;
+    contain-intrinsic-size: auto 600px;
   }
 
   /* 4) 오로라 버튼 (핵심 CTA) */

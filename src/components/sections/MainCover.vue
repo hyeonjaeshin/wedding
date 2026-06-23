@@ -51,7 +51,8 @@ function scrollNext() {
         <img
           :src="img"
           alt=""
-          :loading="i < 2 ? 'eager' : 'lazy'"
+          :loading="i === 0 ? 'eager' : 'lazy'"
+          :fetchpriority="i === 0 ? 'high' : 'auto'"
           decoding="async"
           class="h-full w-full object-cover"
         />
@@ -117,19 +118,6 @@ function scrollNext() {
   transform: translateZ(0);
   backface-visibility: hidden;
 }
-/* 활성 슬라이드에만 은은한 줌 */
-.cover-slide.is-active img {
-  animation: coverZoom 6s ease-out forwards;
-  will-change: transform;
-}
-@keyframes coverZoom {
-  from {
-    transform: scale(1) translateZ(0);
-  }
-  to {
-    transform: scale(1.07) translateZ(0);
-  }
-}
 
 .cover-vignette {
   background: radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(0, 0, 0, 0.4) 100%);
@@ -141,13 +129,10 @@ function scrollNext() {
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
 }
 
-/* 접근성: 모션 줄이기 설정 시 줌/전환 정지 */
+/* 접근성: 모션 줄이기 설정 시 전환 정지 */
 @media (prefers-reduced-motion: reduce) {
   .cover-slide {
     transition: none;
-  }
-  .cover-slide.is-active img {
-    animation: none;
   }
 }
 </style>
