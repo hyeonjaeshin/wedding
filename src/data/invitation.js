@@ -40,7 +40,8 @@ export const wedding = {
     address: '경기도 안산시 단원구 광덕4로 140',
     addressDetail: '(고잔동 703)',
     tel: '031-487-8100',
-    // 지도/길찾기는 아래 주소로 검색한다(좌표 없이 동작).
+    // 지도/길찾기 검색어 — 장소명으로 검색해 예식장이 바로 잡히게 한다(미지정 시 주소 사용).
+    searchKeyword: '빌라디지디 안산',
     // 카카오 지도 SDK 를 쓰려면 .env 의 VITE_KAKAO_MAP_KEY 설정 + 좌표(lat/lng) 입력.
     lat: null,
     lng: null,

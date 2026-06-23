@@ -34,7 +34,7 @@ function scrollNext() {
 </script>
 
 <template>
-  <section class="relative h-[100dvh] min-h-[560px] overflow-hidden md:rounded-t-[2rem]">
+  <section class="cover-section relative overflow-hidden md:rounded-t-[2rem]">
     <!-- 배경 슬라이드쇼 (opacity 전환 + 활성 슬라이드만 줌, GPU 합성) -->
     <div class="absolute inset-0">
       <!-- 업로드된 커버가 없을 때 오로라 그라데이션 폴백 -->
@@ -103,6 +103,14 @@ function scrollNext() {
 </template>
 
 <style scoped>
+/* 커버 높이: svh(작은 뷰포트) 사용 → 모바일에서 주소창 숨김/표시로 인한 높이(=이미지 크기) 변동 제거.
+   dvh 와 달리 svh/lvh 는 스크롤 중 값이 변하지 않는다. 미지원 브라우저는 100vh 폴백. */
+.cover-section {
+  height: 100vh;
+  height: 100svh;
+  min-height: 560px;
+}
+
 /* 슬라이드: opacity 전환만(레이아웃/리페인트 최소화), GPU 합성 */
 .cover-slide {
   position: absolute;

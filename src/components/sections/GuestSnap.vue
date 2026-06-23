@@ -1,10 +1,18 @@
 <script setup>
 import { ref } from 'vue'
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import { Navigation, Pagination } from 'swiper/modules'
 import { Camera, X, ChevronLeft, ChevronRight, Trash2, LoaderCircle, Images } from '@lucide/vue'
 import SectionTitle from '../ui/SectionTitle.vue'
 import { useGuestsnap } from '../../composables/useGuestsnap'
 import { useImageCompress } from '../../composables/useImageCompress'
 import { useConfetti } from '../../composables/useConfetti'
+
+import 'swiper/css'
+import 'swiper/css/navigation'
+import 'swiper/css/pagination'
+
+const lightboxModules = [Navigation, Pagination]
 
 // 게스트스냅: 하객 누구나 사진을 올리고 함께 보는 공간(공개)
 const { items, uploadSnaps, removeMine, isMine } = useGuestsnap()
@@ -65,12 +73,6 @@ function open(i) {
 }
 function close() {
   lightboxOpen.value = false
-}
-function prev() {
-  activeIndex.value = (activeIndex.value - 1 + items.value.length) % items.value.length
-}
-function next() {
-  activeIndex.value = (activeIndex.value + 1) % items.value.length
 }
 
 async function onDelete(item) {
@@ -159,38 +161,43 @@ async function onDelete(item) {
       <transition name="snap-fade">
         <div v-if="lightboxOpen && items.length" class="fixed inset-0 z-[60] bg-black/90">
           <button
-            class="absolute right-4 top-4 z-10 rounded-full bg-white/15 p-2 text-white backdrop-blur"
+            class="absolute right-4 top-4 z-20 rounded-full bg-white/15 p-2 text-white backdrop-blur"
             aria-label="닫기"
             @click="close"
           >
             <X class="h-5 w-5" />
           </button>
-          <div class="flex h-full w-full items-center justify-center p-4" @click.self="close">
-            <img
-              :src="items[activeIndex]?.dataUrl"
-              alt=""
-              class="max-h-[88vh] max-w-[94vw] rounded-lg object-contain"
-            />
-          </div>
-          <p
-            v-if="items[activeIndex]?.name"
-            class="absolute bottom-6 left-1/2 -translate-x-1/2 text-sm text-white/85"
+
+          <Swiper
+            :modules="lightboxModules"
+            :initial-slide="activeIndex"
+            :loop="items.length > 1"
+            :navigation="{ nextEl: '.gs-next', prevEl: '.gs-prev' }"
+            :pagination="{ type: 'fraction' }"
+            class="h-full w-full"
           >
-            {{ items[activeIndex].name }}
-          </p>
+            <SwiperSlide v-for="(snap, i) in items" :key="`gs-${snap.id}`">
+              <div class="flex h-full w-full items-center justify-center p-4">
+                <img
+                  :src="snap.dataUrl"
+                  :alt="`하객 스냅 ${i + 1}`"
+                  class="max-h-[88vh] max-w-[94vw] rounded-lg object-contain"
+                />
+              </div>
+            </SwiperSlide>
+          </Swiper>
+
           <button
             v-if="items.length > 1"
-            class="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/15 p-2 text-white backdrop-blur"
+            class="gs-prev absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/15 p-2 text-white backdrop-blur"
             aria-label="이전"
-            @click="prev"
           >
             <ChevronLeft class="h-6 w-6" />
           </button>
           <button
             v-if="items.length > 1"
-            class="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/15 p-2 text-white backdrop-blur"
+            class="gs-next absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/15 p-2 text-white backdrop-blur"
             aria-label="다음"
-            @click="next"
           >
             <ChevronRight class="h-6 w-6" />
           </button>
@@ -216,5 +223,8 @@ async function onDelete(item) {
 .snap-toast-enter-from,
 .snap-toast-leave-to {
   opacity: 0;
+}
+:deep(.swiper-pagination-fraction) {
+  color: #ffffff;
 }
 </style>

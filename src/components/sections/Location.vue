@@ -6,16 +6,17 @@ import { wedding, directions, notice, couple } from '../../data/invitation'
 
 // 오시는 길: 실제 지도(키 없이 동작하는 임베드) + 주소/연락처 + 길찾기
 const { address, name, lat, lng } = wedding.venue
-const query = encodeURIComponent(address)
+// 지도/길찾기는 "장소명"으로 검색해 예식장이 바로 잡히게 한다(없으면 주소).
+const placeQuery = encodeURIComponent(wedding.venue.searchKeyword || address)
 
 // 키 없이 바로 보이는 구글 지도 임베드(모든 기기에서 동작)
-const embedUrl = `https://maps.google.com/maps?q=${query}&z=16&hl=ko&output=embed`
+const embedUrl = `https://maps.google.com/maps?q=${placeQuery}&z=16&hl=ko&output=embed`
 
-// 외부 지도 앱 길찾기 (주소 검색 기반 — 좌표 없이 정확)
-const naverUrl = `https://map.naver.com/v5/search/${query}`
-const kakaoUrl = `https://map.kakao.com/?q=${query}`
+// 외부 지도 앱 길찾기 (장소명 검색 기반)
+const naverUrl = `https://map.naver.com/v5/search/${placeQuery}`
+const kakaoUrl = `https://map.kakao.com/?q=${placeQuery}`
 // 티맵은 주소 검색 웹URL이 없어 앱 스킴으로 연결(티맵 앱 설치된 폰에서 동작)
-const tmapUrl = `tmap://search?name=${query}`
+const tmapUrl = `tmap://search?name=${placeQuery}`
 
 // (선택) 카카오 지도 SDK: VITE_KAKAO_MAP_KEY + 좌표(lat/lng)가 있으면 인터랙티브 카카오맵을 렌더.
 // 키가 없으면 위 구글 임베드가 그대로 표시된다.
@@ -61,7 +62,7 @@ async function copyAddress() {
     </div>
 
     <!-- 지도: 카카오(키 있을 때) 또는 구글 임베드(기본) -->
-    <div class="mt-6 overflow-hidden rounded-2xl shadow-lg ring-1 ring-white/60">
+    <div class="relative mt-6 overflow-hidden rounded-2xl shadow-lg ring-1 ring-white/60">
       <div v-show="useKakao" id="kakao-map" class="h-60 w-full" />
       <iframe
         v-if="!useKakao"
@@ -70,6 +71,16 @@ async function copyAddress() {
         loading="lazy"
         referrerpolicy="no-referrer-when-downgrade"
         title="예식장 위치 지도"
+      />
+      <!-- 지도 위치 고정: 터치/드래그로 지도가 움직이지 않도록 덮개.
+           탭하면 지도 앱(네이버)에서 크게 열린다. -->
+      <a
+        v-if="!useKakao"
+        :href="naverUrl"
+        target="_blank"
+        rel="noopener"
+        class="absolute inset-0"
+        aria-label="지도 크게 보기"
       />
     </div>
 
