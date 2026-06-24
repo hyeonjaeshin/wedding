@@ -42,7 +42,7 @@ function close() {
         :modules="mainModules"
         effect="fade"
         :fade-effect="{ crossFade: true }"
-        :loop="true"
+        :loop="images.length > 2"
         :autoplay="{ delay: 3500, disableOnInteraction: false }"
         :pagination="{ clickable: true }"
         class="aspect-[4/5] w-full"
@@ -93,7 +93,7 @@ function close() {
         <Swiper
           :modules="lightboxModules"
           :initial-slide="activeIndex"
-          :loop="true"
+          :loop="images.length > 2"
           :navigation="{ nextEl: '.lb-next', prevEl: '.lb-prev' }"
           :pagination="{ type: 'fraction' }"
           class="h-full w-full"

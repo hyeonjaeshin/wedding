@@ -105,6 +105,14 @@ export const notice = {
   noFlowers: '축하해 주시는 따뜻한 마음만으로 충분합니다.\n화환은 정중히 사양하오니 너른 양해 부탁드립니다.',
 }
 
+// 할로윈 이스터에그(결혼식이 10/31) — 커버의 신랑신부 이름을 3번 탭하면 등장하는 귀여운 감사 메시지.
+// HalloweenOverlay.vue 에서 렌더. 문구만 바꾸면 됩니다.
+export const halloween = {
+  title: 'Trick or Treat! 🎃',
+  message: ['와주셔서 고마워요 👻', '무서운 건 없고 행복만 가득할게요 💜'],
+  sign: '현재 ❤ 지윤',
+}
+
 // 배경 음악 (BGM). /public/bgm 에 mp3 를 넣고 경로를 지정하세요. 사용 안 하면 src 를 null 로.
 // ⚠️ 음원 파일은 직접 준비해야 합니다(저작권). 저작권 걱정 없는 곡 추천:
 //   · 퍼블릭 도메인 클래식: Pachelbel - Canon in D, Bach - Air on the G String 등

@@ -171,7 +171,7 @@ async function onDelete(item) {
           <Swiper
             :modules="lightboxModules"
             :initial-slide="activeIndex"
-            :loop="items.length > 1"
+            :loop="items.length > 2"
             :navigation="{ nextEl: '.gs-next', prevEl: '.gs-prev' }"
             :pagination="{ type: 'fraction' }"
             class="h-full w-full"

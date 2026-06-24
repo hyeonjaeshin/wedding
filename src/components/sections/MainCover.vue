@@ -2,11 +2,33 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { ChevronDown } from '@lucide/vue'
 import FloatingPetals from '../ui/FloatingPetals.vue'
+import HalloweenOverlay from '../ui/HalloweenOverlay.vue'
 import { couple, wedding } from '../../data/invitation'
 import { useCovers } from '../../composables/useCovers'
+import { useConfetti } from '../../composables/useConfetti'
 
 // 커버 사진 = 정적(coverImages) + 관리자 업로드(Firestore "covers")
 const { images } = useCovers()
+
+// 할로윈 이스터에그: 신랑신부 이름을 3번 톡톡 탭하면 발동(평소엔 아무 표시 없음)
+const { halloween: fireHalloween } = useConfetti()
+const boo = ref(false)
+let tapCount = 0
+let tapTimer = null
+let booTimer = null
+function onNameTap() {
+  tapCount += 1
+  clearTimeout(tapTimer)
+  tapTimer = setTimeout(() => (tapCount = 0), 1200)
+  if (tapCount >= 3) {
+    tapCount = 0
+    if (boo.value) return // 재생 중 중복 방지
+    fireHalloween()
+    boo.value = true
+    clearTimeout(booTimer)
+    booTimer = setTimeout(() => (boo.value = false), 5000)
+  }
+}
 
 // 첫 화면 커버: 사진이 일정 간격으로 페이드 전환되는 슬라이드쇼
 const current = ref(0)
@@ -25,6 +47,8 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   if (timer) clearInterval(timer)
+  clearTimeout(tapTimer)
+  clearTimeout(booTimer)
 })
 
 // SCROLL 클릭 → 다음 섹션으로 부드럽게 이동
@@ -72,7 +96,10 @@ function scrollNext() {
         <p class="text-glow mb-6 text-xs font-light uppercase tracking-[0.35em] opacity-95 sm:text-sm">
           We're getting married
         </p>
-        <h1 class="aurora-text-light cover-title whitespace-nowrap font-serif text-[2.75rem] font-extrabold leading-tight sm:text-5xl">
+        <h1
+          class="aurora-text-light cover-title select-none whitespace-nowrap font-serif text-[2.75rem] font-extrabold leading-tight sm:text-5xl"
+          @click="onNameTap"
+        >
           {{ couple.groom.shortName }}
           <span class="px-1">&amp;</span>
           {{ couple.bride.shortName }}
@@ -90,15 +117,20 @@ function scrollNext() {
     </div>
 
     <!-- 스크롤 버튼 (클릭 시 다음 섹션으로) -->
+    <!-- inset-x-0 + items-center 로 화면 정중앙 정렬 (animate-float 의 translateY 와 transform 충돌 없음) -->
     <button
       type="button"
-      class="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 animate-float text-white/90"
+      class="absolute bottom-8 inset-x-0 z-10 flex animate-float flex-col items-center text-white/90"
       aria-label="아래로 스크롤"
       @click="scrollNext"
     >
-      <span class="mb-1 block text-[10px] uppercase tracking-[0.3em]">Scroll</span>
-      <ChevronDown class="mx-auto h-7 w-7" :stroke-width="1.5" />
+      <!-- pl 로 letter-spacing 의 우측 여백을 보정(글자 중앙) -->
+      <span class="mb-1 block pl-[0.3em] text-center text-[10px] uppercase tracking-[0.3em]">Scroll</span>
+      <ChevronDown class="h-7 w-7" :stroke-width="1.5" />
     </button>
+
+    <!-- 할로윈 이스터에그 오버레이(이름 3번 탭 시) -->
+    <HalloweenOverlay :active="boo" />
   </section>
 </template>
 

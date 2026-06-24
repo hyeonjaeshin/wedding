@@ -27,5 +27,23 @@ export function useConfetti() {
     }, 180)
   }
 
-  return { celebrate }
+  // 할로윈 이스터에그용 이모지 컨피티(귀엽고 화사하되 과하지 않게)
+  function halloween() {
+    if (prefersReducedMotion()) return
+    const shapes = ['🎃', '👻', '🦇', '🍬', '⭐'].map((text) =>
+      confetti.shapeFromText({ text, scalar: 2 })
+    )
+    const base = { shapes, scalar: 2, disableForReducedMotion: true, ticks: 240 }
+    // 양쪽 + 가운데 + 위쪽 한 번 더 (화사하게 4버스트, 과하지 않게)
+    confetti({ ...base, particleCount: 34, spread: 80, origin: { x: 0.2, y: 0.62 } })
+    confetti({ ...base, particleCount: 34, spread: 80, origin: { x: 0.8, y: 0.62 } })
+    setTimeout(() => {
+      confetti({ ...base, particleCount: 30, spread: 120, startVelocity: 34, origin: { x: 0.5, y: 0.5 } })
+    }, 150)
+    setTimeout(() => {
+      confetti({ ...base, particleCount: 18, spread: 95, origin: { x: 0.5, y: 0.4 } })
+    }, 560)
+  }
+
+  return { celebrate, halloween }
 }
