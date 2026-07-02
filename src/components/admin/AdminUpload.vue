@@ -5,6 +5,7 @@ import { useGallery } from '../../composables/useGallery'
 import { useCovers } from '../../composables/useCovers'
 import { useGuestsnap } from '../../composables/useGuestsnap'
 import { useGuestbook } from '../../composables/useGuestbook'
+import { useRsvp } from '../../composables/useRsvp'
 import { useImageCompress } from '../../composables/useImageCompress'
 
 // ── 패스코드 게이트 (비밀 URL + 패스코드 수준의 가벼운 보호) ──
@@ -33,7 +34,11 @@ const gallery = useGallery()
 const covers = useCovers()
 const guestsnap = useGuestsnap()
 const guestbook = useGuestbook()
+const rsvp = useRsvp({ subscribe: true })
 const { compress } = useImageCompress()
+
+// RSVP 표시용 라벨
+const mealLabel = (m) => ({ yes: '식사 O', no: '식사 X', undecided: '미정' }[m] || '-')
 
 // 방명록 날짜 표시 + 관리자 삭제
 const fmtDate = (d) =>
@@ -64,8 +69,9 @@ const tab = ref('gallery')
 const TABS = [
   { key: 'gallery', label: '갤러리' },
   { key: 'covers', label: '커버' },
-  { key: 'guestsnap', label: '게스트스냅' },
+  { key: 'guestsnap', label: '스냅' },
   { key: 'guestbook', label: '방명록' },
+  { key: 'rsvp', label: '참석' },
 ]
 // 업로드 대상(갤러리/커버 공용 UI)
 const target = computed(() => (tab.value === 'covers' ? covers : gallery))
@@ -174,12 +180,12 @@ function goHome() {
         </div>
 
         <!-- 탭 -->
-        <div class="mb-6 grid grid-cols-4 gap-1 rounded-xl bg-white/50 p-1">
+        <div class="mb-6 grid grid-cols-5 gap-1 rounded-xl bg-white/50 p-1">
           <button
             v-for="t in TABS"
             :key="t.key"
-            class="rounded-lg py-2 text-sm font-medium transition"
-            :class="tab === t.key ? 'aurora-btn !py-2' : 'text-ink/60'"
+            class="rounded-lg py-2 text-xs font-medium transition"
+            :class="tab === t.key ? 'aurora-btn !py-2 !px-1' : 'text-ink/60'"
             @click="switchTab(t.key)"
           >
             {{ t.label }}
@@ -341,6 +347,66 @@ function goHome() {
               </button>
             </li>
           </ul>
+        </template>
+
+        <!-- 참석 현황: RSVP 통계 + 응답 목록 -->
+        <template v-else-if="tab === 'rsvp'">
+          <p v-if="rsvp.loading.value" class="text-xs text-ink/45">불러오는 중...</p>
+          <template v-else>
+            <!-- 요약 통계 -->
+            <div class="grid grid-cols-3 gap-2">
+              <div class="glass-card px-2 py-3 text-center">
+                <div class="aurora-text font-serif text-2xl font-bold tabular-nums">{{ rsvp.stats.value.headcount }}</div>
+                <div class="mt-0.5 text-[11px] text-sage-600">참석 인원</div>
+              </div>
+              <div class="glass-card px-2 py-3 text-center">
+                <div class="font-serif text-2xl font-bold tabular-nums text-ink/70">{{ rsvp.stats.value.attendingResponses }}</div>
+                <div class="mt-0.5 text-[11px] text-sage-600">참석 응답</div>
+              </div>
+              <div class="glass-card px-2 py-3 text-center">
+                <div class="font-serif text-2xl font-bold tabular-nums text-ink/50">{{ rsvp.stats.value.declineResponses }}</div>
+                <div class="mt-0.5 text-[11px] text-sage-600">불참</div>
+              </div>
+            </div>
+            <div class="mt-2 grid grid-cols-3 gap-2 text-center text-[12px] text-ink/70">
+              <div class="glass-card px-2 py-2">신랑측 <b class="text-ink">{{ rsvp.stats.value.groom }}</b></div>
+              <div class="glass-card px-2 py-2">신부측 <b class="text-ink">{{ rsvp.stats.value.bride }}</b></div>
+              <div class="glass-card px-2 py-2">식사 <b class="text-ink">{{ rsvp.stats.value.mealYes }}</b></div>
+            </div>
+
+            <!-- 응답 목록 -->
+            <h2 class="mb-2 mt-6 text-sm font-semibold text-ink/70">
+              응답 <span class="text-ink/40">({{ rsvp.entries.value.length }})</span>
+            </h2>
+            <p v-if="!rsvp.entries.value.length" class="text-xs text-ink/45">아직 응답이 없습니다.</p>
+            <ul v-else class="space-y-2">
+              <li
+                v-for="r in rsvp.entries.value"
+                :key="r.id"
+                class="glass-card flex items-start gap-2 p-3 text-sm"
+              >
+                <span
+                  class="mt-0.5 shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium"
+                  :class="r.attending === 'yes' ? 'bg-sage-400/20 text-sage-600' : 'bg-rosewood-300/20 text-rosewood-500'"
+                >
+                  {{ r.attending === 'yes' ? '참석' : '불참' }}
+                </span>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-baseline justify-between gap-2">
+                    <span class="truncate font-semibold text-ink">
+                      {{ r.name }}
+                      <span class="ml-1 text-[11px] font-normal text-ink/45">{{ r.side }}</span>
+                    </span>
+                    <span class="shrink-0 text-[11px] text-ink/40">{{ fmtDate(r.createdAt) }}</span>
+                  </div>
+                  <div class="mt-0.5 text-[12px] text-ink/60">
+                    <span v-if="r.attending === 'yes'">{{ r.count }}명 · {{ mealLabel(r.meal) }}</span>
+                    <span v-if="r.memo" class="block whitespace-pre-line text-ink/70">“{{ r.memo }}”</span>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </template>
         </template>
 
         <!-- 사용 가이드 -->

@@ -1,13 +1,75 @@
-import { ref } from 'vue'
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase'
 
-// 참석 여부(RSVP) 제출 로직
-// - Firestore "rsvp" 컬렉션에 저장 (보안 규칙상 읽기는 관리자 콘솔에서만)
-// - 데모 모드에서는 콘솔에만 기록
-export function useRsvp() {
+// 참석 여부(RSVP)
+// - submit: "rsvp" 컬렉션에 저장
+// - subscribe:true (관리자 전용)일 때만 목록을 실시간 구독해 통계를 계산한다.
+//   (일반 방문 페이지에서는 구독하지 않아 불필요한 읽기가 없음)
+export function useRsvp({ subscribe = false } = {}) {
   const submitting = ref(false)
   const submitted = ref(false)
+  const entries = ref([])
+  const loading = ref(subscribe)
+  let unsubscribe = null
+
+  if (subscribe) {
+    onMounted(() => {
+      if (!db) {
+        loading.value = false
+        return
+      }
+      const q = query(collection(db, 'rsvp'), orderBy('createdAt', 'desc'))
+      unsubscribe = onSnapshot(
+        q,
+        (snap) => {
+          entries.value = snap.docs.map((d) => {
+            const x = d.data()
+            return {
+              id: d.id,
+              name: x.name,
+              attending: x.attending,
+              side: x.side || '',
+              count: Number(x.count) || 1,
+              meal: x.meal || '',
+              memo: x.memo || '',
+              createdAt: x.createdAt?.toDate?.() ?? null,
+            }
+          })
+          loading.value = false
+        },
+        (err) => {
+          if (err?.code === 'permission-denied') {
+            console.warn('[rsvp] 읽기 권한이 없습니다. firestore.rules 를 배포하세요.')
+          } else {
+            console.error('[rsvp] 구독 오류:', err)
+          }
+          loading.value = false
+        }
+      )
+    })
+    onBeforeUnmount(() => {
+      if (unsubscribe) unsubscribe()
+    })
+  }
+
+  // 참석 통계(참석은 인원 수 합산, 불참은 응답 수)
+  const stats = computed(() => {
+    const yes = entries.value.filter((e) => e.attending === 'yes')
+    const no = entries.value.filter((e) => e.attending === 'no')
+    const sum = (arr) => arr.reduce((s, e) => s + (e.count || 1), 0)
+    return {
+      responses: entries.value.length,
+      attendingResponses: yes.length,
+      declineResponses: no.length,
+      headcount: sum(yes), // 총 참석 인원
+      groom: sum(yes.filter((e) => e.side === '신랑측')),
+      bride: sum(yes.filter((e) => e.side === '신부측')),
+      mealYes: sum(yes.filter((e) => e.meal === 'yes')),
+      mealNo: sum(yes.filter((e) => e.meal === 'no')),
+      mealUndecided: sum(yes.filter((e) => e.meal === 'undecided')),
+    }
+  })
 
   async function submit(form) {
     const name = form.name?.trim()
@@ -17,10 +79,10 @@ export function useRsvp() {
     try {
       const payload = {
         name,
-        attending: form.attending, // 'yes' | 'no'
-        side: form.side || '', // '신랑측' | '신부측'
-        count: Number(form.count) || 1, // 참석 인원
-        meal: form.meal || '', // 식사 여부
+        attending: form.attending,
+        side: form.side || '',
+        count: Number(form.count) || 1,
+        meal: form.meal || '',
         memo: form.memo?.trim() || '',
         createdAt: serverTimestamp(),
       }
@@ -41,5 +103,5 @@ export function useRsvp() {
     }
   }
 
-  return { submitting, submitted, submit }
+  return { submitting, submitted, submit, entries, stats, loading }
 }

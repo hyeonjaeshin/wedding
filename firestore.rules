@@ -22,7 +22,9 @@ service cloud.firestore {
     }
 
     match /rsvp/{docId} {
-      allow read: if false; // 응답은 신랑신부(관리자 콘솔)에서만 확인
+      // 관리자 페이지(#/admin)에서 참석 통계를 보기 위해 읽기 허용(공개-읽기).
+      // ⚠️ 하객 이름/참석여부가 공개 읽기 대상이 됨. 강한 비공개가 필요하면 Auth 로 확장.
+      allow read: if true;
       allow create: if request.resource.data.name is string
                     && request.resource.data.name.size() > 0
                     && request.resource.data.attending in ['yes', 'no'];
