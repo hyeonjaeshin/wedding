@@ -120,6 +120,12 @@ export const halloween = {
 //   · 또는 무료 BGM 사이트(예: Pixabay Music)의 라이선스 프리 곡
 //   준비한 mp3 를 public/bgm/wedding-bgm.mp3 로 저장하면 우상단 버튼으로 재생됩니다.
 export const bgm = {
-  src: '/bgm/wedding-bgm.mp3',
-  title: 'Canon in D - Pachelbel',
+  // 방문할 때마다 아래 목록 중 한 곡이 무작위로 재생됩니다.
+  // 곡을 추가/제거하려면 public/bgm/ 에 mp3 를 넣고 이 배열만 수정하세요.
+  tracks: [
+    '/bgm/geoffharvey-best-adventure-ever-122726.mp3',
+    '/bgm/geoffharvey-paved-with-gold-427881.mp3',
+    '/bgm/olammusicali-dance-the-waltz-with-me-olam-musicali-297429.mp3',
+    '/bgm/wedding-bgm.mp3',
+  ],
 }

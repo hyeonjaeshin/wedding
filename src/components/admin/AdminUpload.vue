@@ -1,9 +1,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Lock, ImagePlus, Trash2, CloudUpload, ArrowLeft, LoaderCircle, ArrowUp, ArrowDown, Info } from '@lucide/vue'
+import { Lock, ImagePlus, Trash2, CloudUpload, ArrowLeft, LoaderCircle, ArrowUp, ArrowDown, Info, MessageCircleHeart } from '@lucide/vue'
 import { useGallery } from '../../composables/useGallery'
 import { useCovers } from '../../composables/useCovers'
 import { useGuestsnap } from '../../composables/useGuestsnap'
+import { useGuestbook } from '../../composables/useGuestbook'
 import { useImageCompress } from '../../composables/useImageCompress'
 
 // ── 패스코드 게이트 (비밀 URL + 패스코드 수준의 가벼운 보호) ──
@@ -31,7 +32,24 @@ function tryUnlock() {
 const gallery = useGallery()
 const covers = useCovers()
 const guestsnap = useGuestsnap()
+const guestbook = useGuestbook()
 const { compress } = useImageCompress()
+
+// 방명록 날짜 표시 + 관리자 삭제
+const fmtDate = (d) =>
+  d
+    ? new Intl.DateTimeFormat('ko-KR', {
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(d)
+    : ''
+async function onDeleteEntry(entry) {
+  if (confirm(`"${entry.name}" 님의 축하 메시지를 삭제할까요?`)) {
+    await guestbook.removeEntryAsAdmin(entry.id)
+  }
+}
 
 // 종류별 압축 설정 — 커버는 화질 유지(크게)·갤러리는 가볍게(작게)
 // (Firestore 1MB 한도 안에서 동작하도록 maxBytes 로 상한)
@@ -47,6 +65,7 @@ const TABS = [
   { key: 'gallery', label: '갤러리' },
   { key: 'covers', label: '커버' },
   { key: 'guestsnap', label: '게스트스냅' },
+  { key: 'guestbook', label: '방명록' },
 ]
 // 업로드 대상(갤러리/커버 공용 UI)
 const target = computed(() => (tab.value === 'covers' ? covers : gallery))
@@ -148,14 +167,14 @@ function goHome() {
       <!-- 관리 화면 -->
       <div v-else>
         <div class="mb-5 flex items-center justify-between">
-          <h1 class="aurora-text font-serif text-2xl font-bold">사진 관리</h1>
+          <h1 class="aurora-text font-serif text-2xl font-bold">콘텐츠 관리</h1>
           <button class="aurora-btn-outline !px-3 !py-2" @click="goHome">
             <ArrowLeft class="h-4 w-4" /> 청첩장
           </button>
         </div>
 
         <!-- 탭 -->
-        <div class="mb-6 grid grid-cols-3 gap-1 rounded-xl bg-white/50 p-1">
+        <div class="mb-6 grid grid-cols-4 gap-1 rounded-xl bg-white/50 p-1">
           <button
             v-for="t in TABS"
             :key="t.key"
@@ -260,7 +279,7 @@ function goHome() {
         </template>
 
         <!-- 게스트스냅: 하객 업로드 사진 관리(삭제) -->
-        <template v-else>
+        <template v-else-if="tab === 'guestsnap'">
           <p class="mb-3 text-[12px] leading-6 text-ink/60">
             하객이 올린 사진입니다. 부적절한 사진은 휴지통으로 삭제하세요.
             <br />(업로드는 청첩장의 “하객 스냅” 섹션에서 하객이 직접 합니다.)
@@ -290,6 +309,40 @@ function goHome() {
           </div>
         </template>
 
+        <!-- 방명록: 축하 메시지 관리(삭제) -->
+        <template v-else-if="tab === 'guestbook'">
+          <p class="mb-3 text-[12px] leading-6 text-ink/60">
+            하객이 남긴 축하 메시지입니다. 부적절한 글은 휴지통으로 삭제할 수 있어요.
+          </p>
+          <p v-if="guestbook.loading.value" class="text-xs text-ink/45">불러오는 중...</p>
+          <p v-else-if="!guestbook.entries.value.length" class="text-xs text-ink/45">
+            아직 축하 메시지가 없습니다.
+          </p>
+          <ul v-else class="space-y-2">
+            <li
+              v-for="entry in guestbook.entries.value"
+              :key="entry.id"
+              class="glass-card flex items-start gap-3 p-3"
+            >
+              <MessageCircleHeart class="mt-0.5 h-4 w-4 shrink-0 text-aurora-lilac" />
+              <div class="min-w-0 flex-1">
+                <div class="flex items-baseline justify-between gap-2">
+                  <span class="truncate font-serif text-sm font-semibold text-ink">{{ entry.name }}</span>
+                  <span class="shrink-0 text-[11px] text-ink/40">{{ fmtDate(entry.createdAt) }}</span>
+                </div>
+                <p class="mt-1 whitespace-pre-line text-sm leading-6 text-ink/75">{{ entry.message }}</p>
+              </div>
+              <button
+                class="shrink-0 rounded-lg border border-rosewood-300/60 bg-white/60 p-2 text-rosewood-500"
+                aria-label="삭제"
+                @click="onDeleteEntry(entry)"
+              >
+                <Trash2 class="h-4 w-4" />
+              </button>
+            </li>
+          </ul>
+        </template>
+
         <!-- 사용 가이드 -->
         <div class="mt-8 rounded-2xl border border-white/60 bg-white/45 p-4 text-[12px] leading-6 text-ink/60 backdrop-blur">
           <p class="mb-1 flex items-center gap-1.5 font-semibold text-ink/70">
@@ -299,7 +352,7 @@ function goHome() {
             <li><b>갤러리/커버</b> 탭에서 사진을 고르거나 끌어다 놓으면 자동 압축됩니다.</li>
             <li>"업로드" 버튼을 누르면 해당 위치(맨 뒤)에 추가됩니다.</li>
             <li>목록에서 ↑↓ 로 순서를 바꾸고, 🗑 로 삭제할 수 있습니다.</li>
-            <li><b>게스트스냅</b> 탭에서는 하객이 올린 사진을 정리(삭제)할 수 있습니다.</li>
+            <li><b>게스트스냅</b> 탭은 하객 사진을, <b>방명록</b> 탭은 축하 메시지를 정리(삭제)할 수 있습니다.</li>
             <li>변경은 청첩장에 실시간 반영됩니다.</li>
           </ol>
           <p class="mt-2 text-[11px] text-ink/40">

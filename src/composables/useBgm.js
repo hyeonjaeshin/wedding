@@ -3,7 +3,11 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 // 배경음악(BGM) 재생 상태 관리
 // - 모바일 브라우저는 사용자의 첫 상호작용 전 자동재생을 막으므로,
 //   첫 탭/클릭 시 재생을 시도한다.
-export function useBgm(src) {
+export function useBgm(input) {
+  // input: 문자열 1곡 | 문자열 배열(무작위 1곡 선택) | falsy(없음)
+  const list = Array.isArray(input) ? input.filter(Boolean) : input ? [input] : []
+  const src = list.length ? list[Math.floor(Math.random() * list.length)] : null
+
   const playing = ref(false)
   const available = ref(Boolean(src))
   let audio = null

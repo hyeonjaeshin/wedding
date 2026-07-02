@@ -4,7 +4,8 @@ import { useBgm } from '../composables/useBgm'
 import { bgm } from '../data/invitation'
 
 // 우상단 고정 BGM 토글 버튼 (음악 파일이 있을 때만 표시)
-const { playing, available, toggle } = useBgm(bgm.src)
+// bgm.tracks(여러 곡) 중 하나가 무작위로 재생된다. (구버전 bgm.src 도 호환)
+const { playing, available, toggle } = useBgm(bgm.tracks || bgm.src)
 </script>
 
 <template>

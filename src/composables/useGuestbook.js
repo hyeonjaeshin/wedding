@@ -154,5 +154,18 @@ export function useGuestbook() {
     }
   }
 
-  return { entries, loading, submitting, addEntry, removeEntry, isMine }
+  // 관리자용 삭제: 소유권과 무관하게 어떤 글이든 삭제(#/admin 방명록 관리).
+  async function removeEntryAsAdmin(id) {
+    if (!id) return false
+    try {
+      if (db) await deleteDoc(doc(db, 'guestbook', id))
+      entries.value = entries.value.filter((e) => e.id !== id)
+      return true
+    } catch (err) {
+      console.error('[guestbook] 관리자 삭제 오류:', err)
+      return false
+    }
+  }
+
+  return { entries, loading, submitting, addEntry, removeEntry, removeEntryAsAdmin, isMine }
 }
