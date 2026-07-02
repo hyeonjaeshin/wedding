@@ -1,22 +1,30 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 
-// 배경음악(BGM) 재생 상태 관리
-// - 모바일 브라우저는 사용자의 첫 상호작용 전 자동재생을 막으므로,
-//   첫 탭/클릭 시 재생을 시도한다.
+// 배경음악(BGM) 재생 상태 관리 (플레이리스트)
+// - 여러 곡을 순서대로 재생: 한 곡이 끝나면 다음 곡, 마지막 곡이 끝나면 처음부터 반복.
+// - 시작 곡은 매 방문마다 무작위로 골라 변화를 준다.
+// - 모바일 브라우저는 첫 상호작용 전 자동재생을 막으므로, 첫 탭/클릭 시 재생을 시도한다.
 export function useBgm(input) {
-  // input: 문자열 1곡 | 문자열 배열(무작위 1곡 선택) | falsy(없음)
   const list = Array.isArray(input) ? input.filter(Boolean) : input ? [input] : []
-  const src = list.length ? list[Math.floor(Math.random() * list.length)] : null
-
   const playing = ref(false)
-  const available = ref(Boolean(src))
+  const available = ref(list.length > 0)
+  // 시작 곡 무작위
+  let index = list.length ? Math.floor(Math.random() * list.length) : 0
   let audio = null
 
+  function onEnded() {
+    if (!audio || !list.length) return
+    index = (index + 1) % list.length // 다음 곡(마지막이면 처음으로)
+    audio.src = list[index]
+    audio.play().catch(() => {})
+  }
+
   function ensureAudio() {
-    if (!audio && src) {
-      audio = new Audio(src)
-      audio.loop = true
+    if (!audio && list.length) {
+      audio = new Audio(list[index])
+      audio.loop = false // 같은 곡 반복 X — 끝나면 onEnded 로 다음 곡
       audio.volume = 0.5
+      audio.addEventListener('ended', onEnded)
     }
     return audio
   }
@@ -61,7 +69,10 @@ export function useBgm(input) {
   })
 
   onBeforeUnmount(() => {
-    pause()
+    if (audio) {
+      audio.removeEventListener('ended', onEnded)
+      audio.pause()
+    }
     audio = null
   })
 

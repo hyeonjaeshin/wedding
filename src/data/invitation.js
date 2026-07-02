@@ -48,9 +48,9 @@ export const wedding = {
   },
 }
 
-// 메인 커버 슬라이드쇼 사진.
-// 비워두면 #/admin "커버" 탭에서 업로드한 사진만 사용한다(업로드 전에는 오로라 배경).
-export const coverImages = []
+// 메인 커버 — 로딩 시 즉시 뜨는 기본(정적) 커버. git 에 함께 배포된다.
+// 관리자(#/admin)가 커버를 업로드하면 그 사진들로 전환되고, 없으면 이 정적 커버가 계속 표시된다.
+export const coverImages = ['/images/cover/cover-1.jpg']
 
 // 인사말 (모시는 글)
 export const greeting = {

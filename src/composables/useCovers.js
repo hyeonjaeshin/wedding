@@ -10,7 +10,11 @@ export function useCovers() {
     cacheLimit: 1, // 첫 커버만 캐시 → 재방문 시 즉시 표시
   })
 
-  const images = computed(() => [...coverImages, ...items.value.map((u) => u.dataUrl)])
+  // 업로드된 커버(Firestore/캐시)가 있으면 그걸로, 없으면 정적 기본 커버(로딩 포스터).
+  // → 첫 로딩엔 번들된 정적 커버가 즉시 뜨고, Firestore 커버 로드되면 자연스럽게 전환(중복 없음).
+  const images = computed(() =>
+    items.value.length ? items.value.map((u) => u.dataUrl) : coverImages
+  )
 
   return { images, uploaded: items, submitting, uploadDataUrls, removePhoto, movePhoto }
 }
