@@ -8,7 +8,7 @@ import { useGuestbook } from '../../composables/useGuestbook'
 import { useImageCompress } from '../../composables/useImageCompress'
 
 // ── 패스코드 게이트 (비밀 URL + 패스코드 수준의 가벼운 보호) ──
-const PASSCODE = import.meta.env.VITE_ADMIN_PASSCODE || 'wedding1031'
+const PASSCODE = 'wedding1031'
 const unlocked = ref(false)
 const passInput = ref('')
 const passError = ref(false)
