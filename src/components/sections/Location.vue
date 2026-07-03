@@ -1,46 +1,18 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { MapPin, Copy, Navigation, TrainFront, Bus, Phone, MessageSquare } from '@lucide/vue'
+import { MapPin, Copy, Navigation, TrainFront, Bus, Car, Phone, MessageSquare } from '@lucide/vue'
 import SectionTitle from '../ui/SectionTitle.vue'
 import { wedding, directions, notice, couple } from '../../data/invitation'
 
-// 오시는 길: 실제 지도(키 없이 동작하는 임베드) + 주소/연락처 + 길찾기
-const { address, name, lat, lng } = wedding.venue
+// 오시는 길: 약도 이미지(탭하면 지도앱) + 주소/교통/연락처
+const { address, name } = wedding.venue
 // 지도/길찾기는 "장소명"으로 검색해 예식장이 바로 잡히게 한다(없으면 주소).
 const placeQuery = encodeURIComponent(wedding.venue.searchKeyword || address)
-
-// 키 없이 바로 보이는 구글 지도 임베드(모든 기기에서 동작)
-const embedUrl = `https://maps.google.com/maps?q=${placeQuery}&z=16&hl=ko&output=embed`
 
 // 외부 지도 앱 길찾기 (장소명 검색 기반)
 const naverUrl = `https://map.naver.com/v5/search/${placeQuery}`
 const kakaoUrl = `https://map.kakao.com/?q=${placeQuery}`
 // 티맵은 주소 검색 웹URL이 없어 앱 스킴으로 연결(티맵 앱 설치된 폰에서 동작)
 const tmapUrl = `tmap://search?name=${placeQuery}`
-
-// (선택) 카카오 지도 SDK: VITE_KAKAO_MAP_KEY + 좌표(lat/lng)가 있으면 인터랙티브 카카오맵을 렌더.
-// 키가 없으면 위 구글 임베드가 그대로 표시된다.
-const kakaoKey = import.meta.env.VITE_KAKAO_MAP_KEY
-const useKakao = ref(false)
-
-onMounted(() => {
-  if (!kakaoKey || lat == null || lng == null) return
-  const src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&autoload=false`
-  const script = document.createElement('script')
-  script.src = src
-  script.onload = () => {
-    // eslint-disable-next-line no-undef
-    kakao.maps.load(() => {
-      useKakao.value = true
-      const container = document.getElementById('kakao-map')
-      const center = new kakao.maps.LatLng(lat, lng)
-      const map = new kakao.maps.Map(container, { center, level: 4 })
-      new kakao.maps.Marker({ position: center, map })
-    })
-  }
-  script.onerror = () => (useKakao.value = false)
-  document.head.appendChild(script)
-})
 
 async function copyAddress() {
   try {
@@ -61,28 +33,18 @@ async function copyAddress() {
       <p v-if="wedding.venue.hall" class="mt-1 text-sm text-ink/70">{{ wedding.venue.hall }}</p>
     </div>
 
-    <!-- 지도: 카카오(키 있을 때) 또는 구글 임베드(기본) -->
-    <div class="relative mt-6 overflow-hidden rounded-2xl shadow-lg ring-1 ring-white/60">
-      <div v-show="useKakao" id="kakao-map" class="h-60 w-full" />
-      <iframe
-        v-if="!useKakao"
-        :src="embedUrl"
-        class="h-60 w-full border-0"
-        loading="lazy"
-        referrerpolicy="no-referrer-when-downgrade"
-        title="예식장 위치 지도"
-      />
-      <!-- 지도 위치 고정: 터치/드래그로 지도가 움직이지 않도록 덮개.
-           탭하면 지도 앱(네이버)에서 크게 열린다. -->
-      <a
-        v-if="!useKakao"
-        :href="naverUrl"
-        target="_blank"
-        rel="noopener"
-        class="absolute inset-0"
-        aria-label="지도 크게 보기"
-      />
-    </div>
+    <!-- 오시는 길 약도(지도 대신) — 탭하면 지도 앱에서 열림 -->
+    <a
+      v-if="directions.image"
+      :href="naverUrl"
+      target="_blank"
+      rel="noopener"
+      class="mt-6 block overflow-hidden rounded-2xl shadow-lg ring-1 ring-white/60"
+      aria-label="약도 — 지도에서 열기"
+    >
+      <img :src="directions.image" alt="오시는 길 약도" class="w-full" loading="lazy" />
+      <span class="block bg-white/70 py-1.5 text-center text-xs text-ink/55">약도를 누르면 지도에서 열려요</span>
+    </a>
 
     <div class="mt-5 space-y-1 text-center text-sm text-ink/80">
       <p class="inline-flex items-center gap-1">
@@ -92,8 +54,15 @@ async function copyAddress() {
       <p class="text-ink/60">Tel. {{ wedding.venue.tel }}</p>
     </div>
 
-    <!-- 대중교통 안내 -->
-    <div class="glass-card mt-5 space-y-3 p-5 text-sm leading-6 text-ink/80">
+    <!-- 교통 안내: 자가용 · 지하철 · 버스 -->
+    <div class="glass-card mt-5 space-y-3.5 p-5 text-sm leading-6 text-ink/80">
+      <div v-if="directions.car" class="flex gap-2.5">
+        <Car class="mt-0.5 h-4 w-4 shrink-0 text-aurora-pink" />
+        <div>
+          <p class="font-semibold text-ink/90">자가용</p>
+          <p class="mt-0.5">{{ directions.car }}</p>
+        </div>
+      </div>
       <div v-if="directions.subway" class="flex gap-2.5">
         <TrainFront class="mt-0.5 h-4 w-4 shrink-0 text-aurora-blue" />
         <div>
@@ -101,18 +70,15 @@ async function copyAddress() {
           <p class="mt-0.5">{{ directions.subway }}</p>
         </div>
       </div>
-      <div v-if="directions.bus" class="flex gap-2.5">
+      <div v-if="directions.bus?.length" class="flex gap-2.5">
         <Bus class="mt-0.5 h-4 w-4 shrink-0 text-aurora-mint" />
-        <div>
+        <div class="min-w-0">
           <p class="font-semibold text-ink/90">버스</p>
-          <p class="mt-0.5">{{ directions.bus }}</p>
+          <p v-for="b in directions.bus" :key="b.stop" class="mt-0.5">
+            <span class="text-ink/50">{{ b.stop }}</span> · {{ b.lines }}
+          </p>
         </div>
       </div>
-    </div>
-
-    <!-- 오시는 길 안내 사진(약도/경로) — 파일이 있을 때만 표시 -->
-    <div v-if="directions.image" class="mt-5 overflow-hidden rounded-2xl shadow ring-1 ring-white/60">
-      <img :src="directions.image" alt="오시는 길 안내" class="w-full" loading="lazy" />
     </div>
 
     <!-- 주소 복사 -->

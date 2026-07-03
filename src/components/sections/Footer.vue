@@ -35,6 +35,17 @@ async function share() {
     <p class="mt-3 text-sm text-ink/60">{{ wedding.dateText }}</p>
     <p class="mt-1 text-sm text-ink/60">{{ wedding.venue.name }} {{ wedding.venue.hall }}</p>
 
+    <!-- 청첩장 QR 코드 -->
+    <div class="mt-8 flex flex-col items-center gap-2">
+      <img
+        src="/images/qr.png"
+        alt="청첩장 QR 코드"
+        class="h-32 w-32 rounded-2xl bg-white p-2.5 shadow-lg ring-1 ring-white/60"
+        loading="lazy"
+      />
+      <p class="text-xs text-ink/45">QR 코드로 청첩장을 전해보세요</p>
+    </div>
+
     <div class="mt-7 flex justify-center gap-2">
       <button class="aurora-btn" @click="copyLink">
         <Link2 class="h-4 w-4" /> 링크 복사하기
