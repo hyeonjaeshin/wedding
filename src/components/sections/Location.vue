@@ -54,20 +54,13 @@ async function copyAddress() {
       <p class="text-ink/60">Tel. {{ wedding.venue.tel }}</p>
     </div>
 
-    <!-- 교통 안내: 자가용 · 지하철 · 버스 -->
+    <!-- 교통 안내: 지하철 · 버스 · 자가용(주차) -->
     <div class="glass-card mt-5 space-y-3.5 p-5 text-sm leading-6 text-ink/80">
-      <div v-if="directions.car" class="flex gap-2.5">
-        <Car class="mt-0.5 h-4 w-4 shrink-0 text-aurora-pink" />
-        <div>
-          <p class="font-semibold text-ink/90">자가용</p>
-          <p class="mt-0.5">{{ directions.car }}</p>
-        </div>
-      </div>
       <div v-if="directions.subway" class="flex gap-2.5">
         <TrainFront class="mt-0.5 h-4 w-4 shrink-0 text-aurora-blue" />
-        <div>
+        <div class="min-w-0">
           <p class="font-semibold text-ink/90">지하철</p>
-          <p class="mt-0.5">{{ directions.subway }}</p>
+          <p class="mt-0.5 whitespace-pre-line">{{ directions.subway }}</p>
         </div>
       </div>
       <div v-if="directions.bus?.length" class="flex gap-2.5">
@@ -79,6 +72,28 @@ async function copyAddress() {
           </p>
         </div>
       </div>
+      <div v-if="directions.car" class="flex gap-2.5">
+        <Car class="mt-0.5 h-4 w-4 shrink-0 text-aurora-pink" />
+        <div class="min-w-0">
+          <p class="font-semibold text-ink/90">자가용 · 주차</p>
+          <p class="mt-0.5">{{ directions.car }}</p>
+          <div v-if="directions.parking?.length" class="mt-1.5 space-y-1.5">
+            <div v-for="p in directions.parking" :key="p.name">
+              <p>
+                <span class="text-ink/90">{{ p.name }}</span>
+                <span class="text-ink/50"> · {{ p.note }}</span>
+              </p>
+              <p v-if="p.addr" class="text-xs text-ink/45">{{ p.addr }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p
+        v-if="directions.notice"
+        class="mt-1 border-t border-white/40 pt-3 text-xs leading-5 text-ink/55"
+      >
+        ※ {{ directions.notice }}
+      </p>
     </div>
 
     <!-- 주소 복사 -->

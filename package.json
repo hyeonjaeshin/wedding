@@ -17,6 +17,7 @@
     "canvas-confetti": "^1.9.4",
     "firebase": "^10.12.2",
     "heic2any": "^0.0.4",
+    "qr-code-styling": "^1.9.2",
     "swiper": "^12.2.0",
     "vue": "^3.4.31"
   },
