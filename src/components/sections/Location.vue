@@ -31,6 +31,7 @@ async function copyAddress() {
     <div class="text-center">
       <p class="font-serif text-lg text-ink">{{ name }}</p>
       <p v-if="wedding.venue.hall" class="mt-1 text-sm text-ink/70">{{ wedding.venue.hall }}</p>
+      <p v-if="wedding.venue.brideRoom" class="mt-0.5 text-xs text-ink/50">{{ wedding.venue.brideRoom }}</p>
     </div>
 
     <!-- 오시는 길 약도(지도 대신) — 탭하면 지도 앱에서 열림 -->

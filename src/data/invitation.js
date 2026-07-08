@@ -40,6 +40,8 @@ export const wedding = {
   venue: {
     name: '빌라디지디',
     hall: '5층 그랜드볼룸홀',
+    // 신부대기실 위치(있으면 홀 아래에 함께 표시). 없으면 '' 로.
+    brideRoom: '신부대기실 6층',
     address: '경기도 안산시 단원구 광덕4로 140',
     addressDetail: '(고잔동 703)',
     tel: '031-487-8100',

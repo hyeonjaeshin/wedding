@@ -2,7 +2,15 @@
 import { onMounted, ref } from 'vue'
 import { Link2, Share2 } from '@lucide/vue'
 import QRCodeStyling from 'qr-code-styling'
-import { couple, wedding, siteUrl } from '../../data/invitation'
+import { couple, wedding, siteUrl, relationship } from '../../data/invitation'
+
+// 'YYYY-MM-DD...' → 'YYYY. MM. DD' 로 표기
+const fmtDate = (iso) => {
+  const [y, m, d] = iso.slice(0, 10).split('-')
+  return `${y}. ${m}. ${d}`
+}
+const sinceText = fmtDate(relationship.sinceISO)
+const weddingDate = fmtDate(wedding.dateISO)
 
 // 오로라 톤 하트 QR — 가운데에 놓을 하트 로고(SVG data URL, 오로라 그라데이션)
 const heartLogo =
@@ -103,6 +111,15 @@ async function share() {
       </button>
     </div>
 
-    <p class="mt-10 text-[11px] text-ink/30">made with ♥ — 모바일 청첩장</p>
+    <div class="mt-12">
+      <p class="font-serif text-lg text-ink/70">
+        {{ couple.groom.shortName }} <span class="aurora-text font-medium">♡</span> {{ couple.bride.shortName }}
+      </p>
+      <p class="mt-2 flex items-center justify-center gap-2 text-[11px] tracking-[0.12em] text-ink/40">
+        <span>{{ sinceText }}</span>
+        <span class="text-aurora-lilac">→</span>
+        <span>{{ weddingDate }}</span>
+      </p>
+    </div>
   </footer>
 </template>
