@@ -113,7 +113,7 @@ async function share() {
 
     <div class="mt-12">
       <p class="font-serif text-lg text-ink/70">
-        {{ couple.groom.shortName }} <span class="aurora-text font-medium">♡</span> {{ couple.bride.shortName }}
+        {{ couple.groom.shortName }} <span class="aurora-text font-medium">♥</span> {{ couple.bride.shortName }}
       </p>
       <p class="mt-2 flex items-center justify-center gap-2 text-[11px] tracking-[0.12em] text-ink/40">
         <span>{{ sinceText }}</span>

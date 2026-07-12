@@ -37,6 +37,27 @@ firebase deploy    # Firebase Hosting + Firestore 규칙 배포 (firebase-tools 
 > 테스트 러너는 아직 없다. 동작 검증은 `npm run build`(타입/구문 오류 확인) +
 > `npm run dev` 수동 확인으로 한다.
 
+## 배포 (⚠️ 중요 — 새 세션에서 자주 누락됨)
+
+**Git 과 실제 사이트는 자동 연결되어 있지 않다.** `git push` 를 해도 실제 도메인은
+바뀌지 않는다(GitHub Actions 등 자동 배포 미설정, `.github/workflows` 없음).
+git 은 소스 백업용(`github.com/hyeonjaeshin/wedding`)일 뿐이다.
+**실제 도메인에 반영하려면 반드시 아래 2단계를 직접 실행해야 한다.**
+
+```bash
+npm run build                       # ① dist/ 에 최신 결과물 생성
+npx firebase deploy --only hosting  # ② Firebase Hosting 업로드 → 즉시 실제 사이트 반영
+```
+
+- Firebase 프로젝트: `toywedding-31fc5` (`.firebaserc` default). 로그인 계정: `bbbb8172@gmail.com`.
+- **Hosting 사이트 2개**(`firebase.json`, 둘 다 `dist/` 배포):
+  - **`hyeonjae-jiyoon`** → https://hyeonjae-jiyoon.web.app **(실제 청첩장 도메인)**
+  - `toywedding-31fc5` → https://toywedding-31fc5.web.app (예비)
+  - `--only hosting` 이면 두 사이트 모두 배포. 실제 도메인만 원하면 `--only hosting:hyeonjae-jiyoon`.
+- 실제 공개 주소(`siteUrl`)는 `src/data/invitation.js` 의 `siteUrl` 및 `index.html` 의 og:url 에 하드코딩 — 도메인이 바뀌면 함께 갱신.
+- 캐시 헤더가 `no-cache` 라 배포 후 새로고침하면 최신 화면이 바로 보인다.
+- Firestore 규칙만 배포: `firebase deploy --only firestore:rules` (규칙 변경 시 재배포 필요, MCP 로는 반영 안 됨 → CLI 사용).
+
 ## 아키텍처 (큰 그림)
 
 - **`src/App.vue`** — 유일한 조립 지점. 섹션 컴포넌트를 순서대로 나열하고

@@ -18,7 +18,7 @@ export const couple = {
     father: '신윤봉',
     mother: '김애란',
     // 자녀 관계 표기 (예: 장남 / 차남 / 아들)
-    relation: '차남',
+    relation: '아들',
   },
   bride: {
     name: '유지윤',
@@ -27,7 +27,7 @@ export const couple = {
     phone: '010-9109-0793',
     father: '유병인',
     mother: '우혜숙',
-    relation: '삼녀',
+    relation: '딸',
   },
 }
 
