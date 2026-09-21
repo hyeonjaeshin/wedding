@@ -56,6 +56,34 @@ async function onDeleteEntry(entry) {
   }
 }
 
+async function moveToPosition(item, newPosition) {
+  const list = target.value.uploaded.value
+  const currentIndex = list.findIndex((x) => x.id === item.id)
+
+  if (currentIndex === -1) return
+
+  // 1부터 시작하는 위치 → 배열 index로 변환
+  const targetIndex = Number(newPosition) - 1
+
+  if (
+    !Number.isInteger(targetIndex) ||
+    targetIndex < 0 ||
+    targetIndex >= list.length
+  ) {
+    return
+  }
+
+  if (targetIndex === currentIndex) return
+
+  const direction = targetIndex > currentIndex ? 1 : -1
+  const distance = Math.abs(targetIndex - currentIndex)
+
+  // 기존 movePhoto를 이용해서 원하는 위치까지 이동
+  for (let i = 0; i < distance; i++) {
+    await target.value.movePhoto(item.id, direction)
+  }
+}
+
 // 종류별 압축 설정 — 커버는 화질 유지(크게)·갤러리는 가볍게(작게)
 // (Firestore 1MB 한도 안에서 동작하도록 maxBytes 로 상한)
 const compressOpts = computed(() =>
@@ -252,7 +280,14 @@ function goHome() {
                 :key="item.id"
                 class="glass-card flex items-center gap-3 p-2"
               >
-                <span class="w-5 shrink-0 text-center text-xs text-ink/40">{{ i + 1 }}</span>
+                <input
+                  type="number"
+                  :value="i + 1"
+                  min="1"
+                  :max="target.uploaded.value.length"
+                  class="w-12 shrink-0 rounded-lg border border-white/70 bg-white/60 px-1 py-1 text-center text-xs text-ink outline-none focus:border-aurora-lilac"
+                  @change="moveToPosition(item, $event.target.value)"
+                />
                 <img :src="item.dataUrl" class="h-14 w-14 shrink-0 rounded-lg object-cover" />
                 <div class="ml-auto flex items-center gap-1">
                   <button
