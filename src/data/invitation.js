@@ -38,7 +38,7 @@ export const wedding = {
   // D-day 계산 및 캘린더용 (현지 시간)
   dateISO: '2026-10-31T13:50:00+09:00',
   venue: {
-    name: '빌라디지디',
+    name: '빌라드지디',
     hall: '5층 그랜드볼룸홀',
     // 신부대기실 위치(있으면 홀 아래에 함께 표시). 없으면 '' 로.
     brideRoom: '신부대기실 6층',
@@ -46,7 +46,7 @@ export const wedding = {
     addressDetail: '(고잔동 703)',
     tel: '031-487-8100',
     // 지도/길찾기 검색어 — 장소명으로 검색해 예식장이 바로 잡히게 한다(미지정 시 주소 사용).
-    searchKeyword: '빌라디지디 안산',
+    searchKeyword: '빌라드지디 안산',
     // 카카오 지도 SDK 를 쓰려면 .env 의 VITE_KAKAO_MAP_KEY 설정 + 좌표(lat/lng) 입력.
     lat: null,
     lng: null,
@@ -115,7 +115,7 @@ export const directions = {
   parking: [
     { name: '제1주차장 · 화랑주차타워', note: '2시간 무료', addr: '단원구 광덕서로 106' },
     { name: '제2주차장 · 월드타워 주차장', note: '2시간 무료', addr: '단원구 광덕3로 135-18' },
-    { name: '제3주차장 · 고객 전용 주차장', note: '유료 (일요일 무료)', addr: '' },
+    { name: '제3주차장 · 고잔역 공영주차장', note: '유료 (일요일 무료)', addr: '' },
   ],
   notice: '주차 혼잡이 예상되오니 가급적 대중교통을 이용해 주시기 바랍니다.',
   // 오시는 길 약도 이미지(클릭 시 지도 앱). 빈 문자열이면 미표시.
@@ -124,7 +124,7 @@ export const directions = {
 
 // 안내 문구(화환 사양 등) — Location.vue 에서 렌더
 export const notice = {
-  noFlowers: '축하해 주시는 따뜻한 마음만으로 충분합니다.\n화환은 정중히 사양하오니 너른 양해 부탁드립니다.',
+  noFlowers: '',
 }
 
 // 할로윈 이스터에그(결혼식이 10/31) — 커버의 신랑신부 이름을 3번 탭하면 등장하는 귀여운 감사 메시지.
